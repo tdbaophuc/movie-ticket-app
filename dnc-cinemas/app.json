@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "DNC Cinemas",
+    "slug": "dnc-cinemas",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/dnc-icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/dnc-splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/dnc-adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/dnc-favicon.png"
+    },
+    "sdkVersion": "52.0.0",
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
