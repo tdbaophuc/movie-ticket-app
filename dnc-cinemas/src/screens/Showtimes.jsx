@@ -4,28 +4,43 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
-  ScrollView,
+  ImageBackground,
+  Dimensions,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import api from '../utils/api';
-import { Ionicons } from '@expo/vector-icons';
+import { SharedElement } from 'react-navigation-shared-element';
+
+const { width } = Dimensions.get('window');
 
 const Showtimes = () => {
   const route = useRoute();
-  const { movieId, movieTitle } = route.params;
+  const { movieId, movieTitle, moviePoster } = route.params;
 
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [dates, setDates] = useState([]);
 
   useEffect(() => {
     const fetchShowtimes = async () => {
       try {
-        const response = await api.get(`/showtimes/${movieId}`);
-        setShowtimes(response.data);
-      } catch (error) {
-        console.error('Lỗi khi tải suất chiếu:', error.message);
+        const res = await api.get(`/showtimes/movie/${movieId}`);
+        const data = res.data;
+        setShowtimes(data);
+
+        // Lấy danh sách các ngày duy nhất
+        const dateSet = new Set(
+          data.map((item) =>
+            new Date(item.dateTime).toDateString()
+          )
+        );
+        const dateArray = [...dateSet];
+        setDates(dateArray);
+        setSelectedDate(dateArray[0]);
+      } catch (err) {
+        console.error('Lỗi khi tải suất chiếu:', err.message);
       } finally {
         setLoading(false);
       }
@@ -34,84 +49,155 @@ const Showtimes = () => {
     fetchShowtimes();
   }, [movieId]);
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#E50914" />
-      </View>
-    );
-  }
+  const filteredShowtimes = showtimes.filter(
+    (s) =>
+      new Date(s.dateTime).toDateString() === selectedDate
+  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Suất chiếu của: {movieTitle}</Text>
+    <ImageBackground
+      source={{ uri: moviePoster }}
+      blurRadius={8}
+      style={styles.bg}
+    >
+        
+      <View style={styles.overlay}>
+        <SharedElement id={`movie.${movieId}.poster`}>
+          <Text style={styles.title}>{movieTitle}</Text>
+        </SharedElement>
 
-      <ScrollView>
-        {showtimes.map((showtime) => (
-          <TouchableOpacity
-            key={showtime._id}
-            style={styles.card}
-            activeOpacity={0.8}
-            onPress={() => {
-              // Điều hướng đến màn hình chọn ghế
-              console.log('Đi đến đặt vé cho:', showtime._id);
-            }}
-          >
-            <View style={styles.info}>
-              <Text style={styles.cinema}>{showtime.room.name}</Text>
-              <Text style={styles.datetime}>
-                {new Date(showtime.startTime).toLocaleString()}
+        <Text style={styles.subtitle}>Chọn ngày chiếu</Text>
+        <FlatList
+          data={dates}
+          keyExtractor={(item) => item}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.dateList}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.dateItem,
+                selectedDate === item && styles.dateItemActive,
+              ]}
+              onPress={() => setSelectedDate(item)}
+            >
+              <Text
+                style={[
+                  styles.dateText,
+                  selectedDate === item && styles.dateTextActive,
+                ]}
+              >
+                {item.split(' ').slice(0, 2).join(' ')}
               </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={24} color="#888" />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
+            </TouchableOpacity>
+          )}
+        />
+
+        <Text style={styles.subtitle}>Chọn suất chiếu</Text>
+        <FlatList
+          data={filteredShowtimes}
+          keyExtractor={(item) => item._id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.timeList}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.timeItem}
+              onPress={() => {
+                console.log('Chọn suất:', item._id);
+                // Điều hướng đến chọn ghế
+              }}
+            >
+              <Text style={styles.timeText}>
+                {new Date(item.dateTime).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </Text>
+              <Text style={styles.format}>{item.format} - {item.language}</Text>
+              <Text style={styles.price}>{item.ticketPrice.toLocaleString()}₫</Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    </ImageBackground>
   );
 };
 
+Showtimes.sharedElements = (route) => {
+  const { movieId } = route.params;
+  return [`movie.${movieId}.poster`];
+};
+
 const styles = StyleSheet.create({
-  container: {
+  bg: {
     flex: 1,
-    backgroundColor: '#111',
-    padding: 16,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 16,
+    paddingTop: 40,
   },
   title: {
-    fontSize: 20,
-    color: '#fff',
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: '#1c1c1c',
-    padding: 16,
-    borderRadius: 12,
+    color: '#fff',
     marginBottom: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
   },
-  info: {
-    flex: 1,
-  },
-  cinema: {
+  subtitle: {
+    color: '#fff',
+    marginTop: 20,
     fontSize: 16,
+    fontWeight: '600',
+  },
+  dateList: {
+    marginTop: 8,
+  },
+  dateItem: {
+    padding: 10,
+    backgroundColor: '#333',
+    borderRadius: 8,
+    marginRight: 8,
+    height: width*0.1,
+    width: width*0.2,
+  },
+  dateItemActive: {
+    backgroundColor: '#E50914',
+  },
+  dateText: {
+    color: '#ccc',
+  },
+  dateTextActive: {
     color: '#fff',
     fontWeight: 'bold',
   },
-  datetime: {
-    color: '#ccc',
+  timeList: {
+    marginTop: 12,
+  },
+  timeItem: {
+    backgroundColor: '#222',
+    padding: 12,
+    borderRadius: 12,
+    marginRight: 10,
+    minWidth: width * 0.4,
+    height: 100,
+  },
+  timeText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  format: {
+    color: '#aaa',
     marginTop: 4,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: '#111',
+  price: {
+    color: '#E50914',
+    marginTop: 4,
+    fontWeight: 'bold',
   },
 });
 

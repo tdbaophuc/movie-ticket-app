@@ -32,6 +32,7 @@ const Movies = () => {
         navigation.navigate('Showtimes', {
           movieId: item._id,
           movieTitle: item.title,
+          moviePoster: item.poster,
         })
       }
       android_ripple={{ color: '#ccc' }}
