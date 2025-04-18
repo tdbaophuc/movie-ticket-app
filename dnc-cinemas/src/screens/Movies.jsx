@@ -33,6 +33,7 @@ const Movies = () => {
           movieId: item._id,
           movieTitle: item.title,
           moviePoster: item.poster,
+          movieDescription: item.description,
         })
       }
       android_ripple={{ color: '#ccc' }}
