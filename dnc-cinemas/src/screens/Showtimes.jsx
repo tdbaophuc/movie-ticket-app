@@ -7,16 +7,18 @@ import {
   TouchableOpacity,
   ImageBackground,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import api from '../utils/api';
 import { SharedElement } from 'react-navigation-shared-element';
+import { LinearGradient } from 'expo-linear-gradient'; // Thêm expo-linear-gradient để tạo hiệu ứng mờ dần
 
 const { width } = Dimensions.get('window');
 
 const Showtimes = () => {
   const route = useRoute();
-  const { movieId, movieTitle, moviePoster } = route.params;
+  const { movieId, movieTitle, moviePoster, movieDescription } = route.params;
 
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,15 +59,28 @@ const Showtimes = () => {
   return (
     <ImageBackground
       source={{ uri: moviePoster }}
-      blurRadius={8}
       style={styles.bg}
+      blurRadius={8}
+      
     >
-        
-      <View style={styles.overlay}>
+      <LinearGradient
+        colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.7)']}
+        style={styles.overlay}
+      >
+        {/* Tiêu đề phim */}
         <SharedElement id={`movie.${movieId}.poster`}>
           <Text style={styles.title}>{movieTitle}</Text>
         </SharedElement>
 
+        {/* Nội dung phim cuộn được */}
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.subtitle}>Thông tin phim</Text>
+        <Text style={styles.infoText}>{movieDescription}</Text>
+      </ScrollView>
+
+      {/* View cố định ở dưới cùng: chọn ngày & giờ */}
+      <View style={styles.bottomSection}>
+        {/* Chọn ngày chiếu */}
         <Text style={styles.subtitle}>Chọn ngày chiếu</Text>
         <FlatList
           data={dates}
@@ -93,6 +108,7 @@ const Showtimes = () => {
           )}
         />
 
+        {/* Chọn suất chiếu */}
         <Text style={styles.subtitle}>Chọn suất chiếu</Text>
         <FlatList
           data={filteredShowtimes}
@@ -105,7 +121,6 @@ const Showtimes = () => {
               style={styles.timeItem}
               onPress={() => {
                 console.log('Chọn suất:', item._id);
-                // Điều hướng đến chọn ghế
               }}
             >
               <Text style={styles.timeText}>
@@ -114,12 +129,17 @@ const Showtimes = () => {
                   minute: '2-digit',
                 })}
               </Text>
-              <Text style={styles.format}>{item.format} - {item.language}</Text>
-              <Text style={styles.price}>{item.ticketPrice.toLocaleString()}₫</Text>
+              <Text style={styles.format}>
+                {item.format} - {item.language}
+              </Text>
+              <Text style={styles.price}>
+                {item.ticketPrice.toLocaleString()}₫
+              </Text>
             </TouchableOpacity>
           )}
         />
       </View>
+      </LinearGradient>
     </ImageBackground>
   );
 };
@@ -137,7 +157,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)', // Mờ từ trên xuống
     paddingHorizontal: 16,
     paddingTop: 40,
   },
@@ -146,23 +166,37 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 12,
+    alignItems: 'center',
+    textAlign:'center',
+    paddingTop: width*0.25,
+  },
+  content: {
+    flex: 1,
+    paddingBottom: 20,
   },
   subtitle: {
     color: '#fff',
     marginTop: 20,
     fontSize: 16,
     fontWeight: '600',
+    textAlign:'center',
+  },
+  infoText: {
+    color: '#ccc',
+    marginTop: 8,
+    textAlign:'center',
   },
   dateList: {
     marginTop: 8,
+    
   },
   dateItem: {
     padding: 10,
     backgroundColor: '#333',
     borderRadius: 8,
     marginRight: 8,
-    height: width*0.1,
-    width: width*0.2,
+    height: width * 0.1,
+    width: width * 0.2,
   },
   dateItemActive: {
     backgroundColor: '#E50914',
@@ -198,6 +232,9 @@ const styles = StyleSheet.create({
     color: '#E50914',
     marginTop: 4,
     fontWeight: 'bold',
+  },
+  bottomSection: {
+    paddingBottom: width*0.25,
   },
 });
 
