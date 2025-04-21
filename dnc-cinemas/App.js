@@ -1,15 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen';  // Đảm bảo import đúng 'SplashScreen' từ expo-splash-screen
 
-import Movies from './src/screens/Movies';
-import Theaters from './src/screens/Theaters';
-import Ticket from './src/screens/Ticket';
-import Showtimes from './src/screens/Showtimes';
-
-const Stack = createStackNavigator();
+import { AuthProvider } from './contexts/AuthContext';
+import AppNavigator from './navigation/AppNavigator';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -17,20 +12,29 @@ export default function App() {
     Poppins_700Bold,
   });
 
+  
+  useEffect(() => {
+    const prepare = async () => {
+      await SplashScreen.preventAutoHideAsync();  // Ngừng tự động ẩn splash screen
+    };
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();  // Ẩn splash screen khi font đã được tải
+    }
+  }, [fontsLoaded]);
+
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;  // Nếu font chưa được tải, không render gì
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Movies">
-        
-        <Stack.Screen name="Movies" component={Movies} />
-        <Stack.Screen name="Theaters" component={Theaters} />
-        <Stack.Screen name="Ticket" component={Ticket} />
-        <Stack.Screen name="Showtimes" component={Showtimes} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </AuthProvider>
   );
-  
 }
