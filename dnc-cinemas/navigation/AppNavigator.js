@@ -30,10 +30,15 @@ const MainStack = () => (
   </Stack.Navigator>
 );
 
+// Màn hình Loading
+import LoadingScreen from '../src/screens/LoadingScreen';
+
 export default function AppNavigator() {
   const { authToken, loading } = useAuth();  // Dùng useAuth để lấy dữ liệu
 
-  if (loading) return null;  // Nếu đang loading thì không render gì
+  if (loading) {
+    return <LoadingScreen />;  // Hiển thị loading khi đang tải dữ liệu từ AsyncStorage
+  }  
 
   return authToken ? <MainStack /> : <AuthStack />;  // Kiểm tra nếu có token thì vào MainStack, nếu không vào AuthStack
 }
