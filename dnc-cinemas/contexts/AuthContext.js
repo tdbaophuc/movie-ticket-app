@@ -18,16 +18,16 @@ export const AuthProvider = ({ children }) => {
         const token = await getRefreshToken();
         if (token) {
           await refreshAccessToken();
-        } else {
-          setLoading(false);
         }
       } catch (error) {
         console.error('Error loading token from storage:', error.message);
-        setLoading(false);
+      } finally {
+        setLoading(false); // Đảm bảo loading luôn tắt
       }
     };
     loadToken();
   }, []);
+  
 
   // Đăng nhập
   const login = async (username, password) => {
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const res = await api.post('/auth/refresh', { refreshToken });
+      const res = await api.post('/auth/refresh-token', { refreshToken });
       const { accessToken } = res.data;
 
       if (!accessToken) {

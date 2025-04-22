@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getRefreshToken, saveRefreshToken, removeRefreshToken } from '../utils/authStorage';
 
-export const API_BASE_URL = 'http://192.168.1.242:5000/api'; // Đổi theo IP LAN nếu test trên máy thật
+export const API_BASE_URL = 'http://192.168.1.242:5000/api'; 
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 
@@ -36,7 +36,7 @@ api.interceptors.response.use(
         const refreshToken = await getRefreshToken();
         if (!refreshToken) throw new Error('Không có refreshToken');
 
-        const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+        const res = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refreshToken });
         const { accessToken } = res.data;
 
         if (!accessToken) throw new Error('Không nhận được accessToken mới');
