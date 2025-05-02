@@ -24,7 +24,7 @@
     "web": {
       "favicon": "./assets/dnc-favicon.png"
     },
-    "sdkVersion": "52.0.0",
+    "sdkVersion": "53.0.0",
     "plugins": [
       "expo-font",
       "expo-secure-store"
