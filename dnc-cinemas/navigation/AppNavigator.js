@@ -1,16 +1,23 @@
 import React, { useContext } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth } from '../contexts/AuthContext';
+import MainTabs from '../src/screens/MainTabs';
 
 // Màn hình Auth
 import LoginScreen from '../src/screens/LoginScreen';
 import Register from '../src/screens/Register';
 
 // Màn hình chính sau khi login
-import Movies from '../src/screens/Movies';
+import HomeScreen from '../src/screens/HomeScreen';
 import Showtimes from '../src/screens/Showtimes';
-import Theaters from '../src/screens/Theaters';
-import Ticket from '../src/screens/Ticket';
+import BookingScreen from '../src/screens/BookingScreen';
+import MyTicketsScreen from '../src/screens/MyTicketsScreen';
+import PaymentScreen from '../src/screens/PaymentScreen';
+import ProfileScreen from '../src/screens/ProfileScreen';
+import EditProfile from '../src/screens/EditProfile';
+import ChangePasswordScreen from '../src/screens/ChangePasswordScreen';
+
+
 
 const Stack = createStackNavigator();
 
@@ -23,10 +30,14 @@ const AuthStack = () => (
 
 const MainStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Movies" component={Movies} />
+    <Stack.Screen name="HomeScreen" component={HomeScreen} />
     <Stack.Screen name="Showtimes" component={Showtimes} />
-    <Stack.Screen name="Theaters" component={Theaters} />
-    <Stack.Screen name="Ticket" component={Ticket} />
+    <Stack.Screen name="BookingScreen" component={BookingScreen}  />
+    <Stack.Screen name="MyTicketScreen" component={MyTicketsScreen} />
+    <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+    <Stack.Screen name="EditProfile" component={EditProfile} />
+    <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
+    
   </Stack.Navigator>
 );
 
@@ -40,5 +51,5 @@ export default function AppNavigator() {
     return <LoadingScreen />;  // Hiển thị loading khi đang tải dữ liệu từ AsyncStorage
   }  
 
-  return authToken ? <MainStack /> : <AuthStack />;  // Kiểm tra nếu có token thì vào MainStack, nếu không vào AuthStack
+  return authToken ? <MainTabs /> : <AuthStack />;  // Kiểm tra nếu có token thì vào MainStack, nếu không vào AuthStack
 }

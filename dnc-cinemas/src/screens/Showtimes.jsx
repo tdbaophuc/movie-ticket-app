@@ -12,11 +12,14 @@ import {
 import { useRoute } from '@react-navigation/native';
 import api from '../utils/api';
 import { SharedElement } from 'react-navigation-shared-element';
-import { LinearGradient } from 'expo-linear-gradient'; // Thêm expo-linear-gradient để tạo hiệu ứng mờ dần
+import { LinearGradient } from 'expo-linear-gradient'; 
+import { Ionicons } from '@expo/vector-icons';
+
+
 
 const { width } = Dimensions.get('window');
 
-const Showtimes = () => {
+const Showtimes = ({ navigation }) => {
   const route = useRoute();
   const { movieId, movieTitle, moviePoster, movieDescription } = route.params;
 
@@ -64,9 +67,12 @@ const Showtimes = () => {
       
     >
       <LinearGradient
-        colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.7)']}
+        colors={['rgba(0, 0, 0, 0)', '#130B2B)']}
         style={styles.overlay}
-      >
+      > 
+         <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
+        </TouchableOpacity>
         {/* Tiêu đề phim */}
         <SharedElement id={`movie.${movieId}.poster`}>
           <Text style={styles.title}>{movieTitle}</Text>
@@ -120,7 +126,13 @@ const Showtimes = () => {
             <TouchableOpacity
               style={styles.timeItem}
               onPress={() => {
-                console.log('Chọn suất:', item._id);
+                navigation.navigate('BookingScreen', {
+                  showtimeId: item._id,
+                  movieTitle: movieTitle,
+                  dateTime: item.dateTime,
+                  ticketPrice: item.ticketPrice,
+ 
+                });
               }}
             >
               <Text style={styles.timeText}>
@@ -199,7 +211,7 @@ const styles = StyleSheet.create({
     width: width * 0.2,
   },
   dateItemActive: {
-    backgroundColor: '#E50914',
+    backgroundColor: '#2E1371',
   },
   dateText: {
     color: '#ccc',
@@ -229,7 +241,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   price: {
-    color: '#E50914',
+    color: '#09FBD3',
     marginTop: 4,
     fontWeight: 'bold',
   },

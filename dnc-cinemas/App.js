@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts, Poppins_400Regular, Poppins_700Bold } from '@expo-google-fonts/poppins';
-import * as SplashScreen from 'expo-splash-screen';  // Đảm bảo import đúng 'SplashScreen' từ expo-splash-screen
+import * as SplashScreen from 'expo-splash-screen';  
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 
 import { AuthProvider } from './contexts/AuthContext';
 import AppNavigator from './navigation/AppNavigator';
@@ -27,14 +28,14 @@ export default function App() {
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return null;  // Nếu font chưa được tải, không render gì
+    return null;  
   }
 
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <AppNavigator />
-      </NavigationContainer>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
     </AuthProvider>
   );
 }
