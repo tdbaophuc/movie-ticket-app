@@ -38,10 +38,10 @@ export default function ProfileScreen() {
   };
 
   const handleEdit = () => {
-    navigation.navigate('EditProfile');
+    navigation.navigate('EditProfile' );
   };
   const handleChangePassword = () => {
-    navigation.navigate('ChangePasswordScreen');
+    navigation.navigate('ChangePasswordScreen',  { userId: userInfo?._id });
   };
 
   const imgprofile = 'https://pub-cd617de5e74b498ab4b882710c47f9b0.r2.dev/MyProfile.png';

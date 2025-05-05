@@ -8,13 +8,13 @@ import { useAuth } from '../../contexts/AuthContext';
 const PaymentScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { selectedSeats, showtimeId } = route.params || {}; // sửa lại nhận params từ trang trước (danh sách ghế đã chọn + id suất chiếu)
+  const { selectedSeats, showtimeId } = route.params || {}; // nhận params từ trang trước (danh sách ghế đã chọn + id suất chiếu)
 
   const { authToken, refreshAccessToken } = useAuth();
 
   const [bookingId, setBookingId] = useState(null);
   const [paying, setPaying] = useState(false);
-  const [countdown, setCountdown] = useState(300); // 5 phút = 300 giây
+  const [countdown, setCountdown] = useState(300); 
 
   // Các trường nhập giả lập
   const [cardNumber, setCardNumber] = useState('');
