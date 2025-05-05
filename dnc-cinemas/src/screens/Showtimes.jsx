@@ -22,7 +22,6 @@ const { width } = Dimensions.get('window');
 const Showtimes = ({ navigation }) => {
   const route = useRoute();
   const { movieId, movieTitle, moviePoster, movieDescription } = route.params;
-
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);

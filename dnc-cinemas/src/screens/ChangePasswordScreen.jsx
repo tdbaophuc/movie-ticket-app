@@ -14,24 +14,26 @@ import {
 import api from '../utils/api';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../contexts/AuthContext';  // Import useAuth để truy cập authToken
+import { useAuth } from '../../contexts/AuthContext';  // Import useAuth để truy cập authToken & user info
 
-export default function ChangePassword() {
+export default function ChangePassword({route}) {
   const navigation = useNavigation();
-  const { authToken } = useAuth();  // Lấy token từ AuthContext
+  const { authToken, refeshtoken } = useAuth(); // Lấy token và thông tin người dùng
+  const { userId } = route.params;
   const [loading, setLoading] = useState(false);
-  const [updating, setUpdating] = useState(false);
   const [formData, setFormData] = useState({
     oldPassword: '',
     newPassword: '',
     confirmNewPassword: '',
   });
-
+  
+  
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
+
     const { oldPassword, newPassword, confirmNewPassword } = formData;
 
     if (!oldPassword || !newPassword || !confirmNewPassword) {
@@ -42,25 +44,26 @@ export default function ChangePassword() {
       return Alert.alert('Lỗi', 'Mật khẩu mới và xác nhận mật khẩu không khớp');
     }
 
-    if (!authToken) {
-      return Alert.alert('Lỗi', 'Bạn cần đăng nhập lại');
+    if (!authToken || !{userId}) {
+      return Alert.alert('Lỗi', 'Không xác định được người dùng. Vui lòng đăng nhập lại');
     }
+    
 
     setLoading(true);
+   
 
     try {
-      // Gọi API đổi mật khẩu với Authorization header
       await api.put(
-        '/user/change-password',
+        `/user/change-password/${userId}`, 
         { oldPassword, newPassword },
         {
           headers: {
-            Authorization: `Bearer ${authToken}`,  // Truyền token trong header
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );
       Alert.alert('Thành công', 'Đổi mật khẩu thành công');
-      navigation.goBack();  // Quay lại màn hình trước đó
+      navigation.goBack();
     } catch (error) {
       Alert.alert('Lỗi', error.response?.data?.message || 'Không thể đổi mật khẩu');
     } finally {
@@ -74,7 +77,7 @@ export default function ChangePassword() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={24} color="#000" marginTop="50"  />
+        <Ionicons name="arrow-back" size={24} color="#000" style={{ marginTop: 50 }} />
       </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>Đổi mật khẩu</Text>
@@ -109,7 +112,7 @@ export default function ChangePassword() {
         <TouchableOpacity
           onPress={handleSave}
           style={styles.saveButton}
-          disabled={loading || updating}
+          disabled={loading}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -121,6 +124,7 @@ export default function ChangePassword() {
     </KeyboardAvoidingView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
