@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
   ScrollView,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../utils/api';
@@ -107,9 +108,18 @@ const BookingScreen = ({ route, navigation }) => {
           <ActivityIndicator size="large" color="#B6116B" />
         ) : (
           <>
+          
+            <View style={styles.screenImageContainer}>
+  <Image
+    source={{ uri: 'https://pub-cd617de5e74b498ab4b882710c47f9b0.r2.dev/Screen-icon.png' }}
+    style={styles.screenImage}
+    resizeMode="contain"
+  />
+</View>
+
             <ScrollView horizontal contentContainerStyle={styles.seatWrapper}>
               <View style={styles.seatColumn}>
-                <Text style={styles.sectionTitle}>Trái</Text>
+                <Text style={styles.sectionTitle}>Khu vực 1</Text>
                 <FlatList
                   data={seats.filter((_, i) => i % 3 === 0)}
                   renderItem={renderSeat}
@@ -118,7 +128,7 @@ const BookingScreen = ({ route, navigation }) => {
                 />
               </View>
               <View style={styles.seatColumn}>
-                <Text style={styles.sectionTitle}>Giữa</Text>
+                <Text style={styles.sectionTitle}>Khu vực 2</Text>
                 <FlatList
                   data={seats.filter((_, i) => i % 3 === 1)}
                   renderItem={renderSeat}
@@ -127,7 +137,7 @@ const BookingScreen = ({ route, navigation }) => {
                 />
               </View>
               <View style={styles.seatColumn}>
-                <Text style={styles.sectionTitle}>Phải</Text>
+                <Text style={styles.sectionTitle}>Khu vực 3</Text>
                 <FlatList
                   data={seats.filter((_, i) => i % 3 === 2)}
                   renderItem={renderSeat}
@@ -211,8 +221,8 @@ const styles = StyleSheet.create({
   bottomInfo: {
     backgroundColor: '#21232F',
     padding: 16,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     height: '25%',
     justifyContent: 'space-between',
     width: '100%',
@@ -235,4 +245,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  screenImageContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  screenImage: {
+    width: '80%',
+    height: 30,
+  },
+  
 });

@@ -3,6 +3,8 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, 
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../utils/api';
 import { Ionicons } from '@expo/vector-icons';
+import * as Animatable from 'react-native-animatable';
+
 
 const MyTicketsScreen = () => {
   const { authToken, refreshAccessToken } = useAuth();
@@ -25,7 +27,20 @@ const MyTicketsScreen = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setTickets(res.data.bookings);
+      const now = new Date();
+const sortedTickets = res.data.bookings
+  .map(ticket => ({
+    ...ticket,
+    isExpired: new Date(ticket.showtime?.dateTime) < now,
+  }))
+  .sort((a, b) => {
+    if (a.isExpired && !b.isExpired) return 1;
+    if (!a.isExpired && b.isExpired) return -1;
+    return new Date(a.showtime.dateTime) - new Date(b.showtime.dateTime);
+  });
+
+setTickets(sortedTickets);
+
     } catch (error) {
       console.error('Lỗi tải vé:', error.response?.data || error.message);
     } finally {
@@ -66,47 +81,53 @@ const MyTicketsScreen = () => {
     );
   };
 
-  const renderTicket = ({ item }) => (
-    
-    <TouchableOpacity 
-      style={[
-        styles.ticketCard, 
-        selectedTicket?._id === item._id && styles.selectedTicketCard
-      ]}
-      onPress={() => setSelectedTicket(item)}
+  const renderTicket = ({ item, index }) => (
+    <Animatable.View
+      animation="fadeInUp"
+      duration={500}
+      delay={index * 100}
     >
-      
-      <View style={styles.row}>
-        {/* Poster phim bên trái */}
-        {item.showtime?.movie?.poster && (
-          <Image 
-            source={{ uri: item.showtime.movie.poster }} 
-            style={styles.moviePoster} 
-            resizeMode="cover"
-          />
-        )}
+      <TouchableOpacity 
+  style={[
+    styles.ticketCard, 
+    selectedTicket?._id === item._id && !item.isExpired && styles.selectedTicketCard,
+    item.isExpired && styles.expiredTicketCard,
+  ]}
+  onPress={() => {
+    if (!item.isExpired) {
+      setSelectedTicket(item);
+    }
+  }}
+  activeOpacity={item.isExpired ? 1 : 0.85}
+>
 
-        {/* Thông tin vé và mã QR bên phải */}
-        <View style={styles.ticketInfo}>
-          <Text style={styles.detail}>DNC Cinemas</Text>
-          <Text style={styles.movieTitle}>{item.showtime?.movie?.title || 'Không có tiêu đề'}</Text>
-          <Text style={styles.detail}>Suất chiếu: {item.showtime ? new Date(item.showtime.dateTime).toLocaleString() : 'Không có suất chiếu'}</Text>
-          <Text style={styles.detail}>Phòng: {item.showtime?.room?.name || 'Không có thông tin phòng'}</Text>
-          <Text style={styles.detail}>Ghế: {item.seats?.join(', ') || 'Không có ghế'}</Text>
-
-          
-        </View>
-        {/* QR code bên dưới */}
-        {item.qrCode && (
+        <View style={styles.row}>
+          {item.showtime?.movie?.poster && (
+            <Image 
+              source={{ uri: item.showtime.movie.poster }} 
+              style={styles.moviePoster} 
+              resizeMode="cover"
+            />
+          )}
+          <View style={styles.ticketInfo}>
+            <Text style={styles.cinemaName}>DNC Cinemas</Text>
+            <Text style={styles.movieTitle}>{item.showtime?.movie?.title || 'Không có tiêu đề'}</Text>
+            <Text style={styles.detail}>{new Date(item.showtime?.dateTime).toLocaleString()}</Text>
+            <Text style={styles.detail}>Phòng: {item.showtime?.room?.name || 'Không rõ'}</Text>
+            <Text style={styles.detail}>Ghế: {item.seats?.join(', ')}</Text>
+          </View>
+          {item.qrCode && (
             <Image 
               source={{ uri: item.qrCode }} 
               style={styles.qrCode}
               resizeMode="contain"
             />
           )}
-      </View>
-    </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Animatable.View>
   );
+  
 
   if (loading) {
     return (
@@ -136,23 +157,32 @@ const MyTicketsScreen = () => {
       />
 
       {/* Nút huỷ vé nếu có vé được chọn */}
-      {selectedTicket && (
-        <View style={styles.cancelButtonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={handleCancelPress}>
-            <Text style={styles.cancelButtonText}>Huỷ vé</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      {selectedTicket && !selectedTicket.isExpired && (
+  <View style={styles.cancelButtonContainer}>
+    <TouchableOpacity style={styles.cancelButton} onPress={handleCancelPress}>
+      <Text style={styles.cancelButtonText}>Huỷ vé</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safe:{
-    flex:1,
-    paddingTop:20,
+  safe: {
+    flex: 1,
+    paddingTop: 40,
     backgroundColor: '#130B2B',
-    color: '#fff',
+    position: 'relative',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    opacity: 0.08,
   },
   logo: {
     fontSize: 28,
@@ -162,61 +192,110 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     paddingTop: 20,
+    textTransform: 'uppercase',
 
   },
-  myTicket: {
-    fontSize: 23,
-    color: '#fff',
-    marginBottom: 10,
-    textAlign: 'center',
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 100,
+    marginTop: 10,
   },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' },
-  listContent: { padding: 20, backgroundColor: '#130B2B' },
-  ticketCard: { 
-    backgroundColor: '#130B2B', 
-    borderRadius: 10, 
-    padding: 10, 
-    marginBottom: 20, 
-    shadowColor: '#fff', 
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+  ticketCard: {
+    backgroundColor: '#21232F',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: '#FE53BB',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+    transform: [{ scale: 1 }],
+  },
+  cinemaName: {
+    color: '#FE53BB',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   selectedTicketCard: {
     borderColor: '#B6116B',
     borderWidth: 2,
+    shadowColor: '#B6116B',
+    transform: [{ scale: 1.02 }],
   },
-  row: { flexDirection: 'row', alignItems: 'flex-start' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
   moviePoster: {
     width: 100,
     height: 140,
-    borderRadius: 10,
-    marginRight: 10,
+    borderRadius: 12,
+    marginRight: 12,
   },
-  ticketInfo: { flex: 1 },
-  movieTitle: { color: '#B6116B', fontSize: 18, fontWeight: 'bold', marginBottom: 5 },
-  detail: { color: '#ccc', fontSize: 14, marginBottom: 3 },
-  noTicketsText: { color: '#aaa', fontSize: 18 },
-  qrCode: { width: 80, height: 80, marginTop: 35, marginRight:10  },
+  ticketInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  movieTitle: {
+    color: '#09FBD3',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  detail: {
+    color: '#ccc',
+    fontSize: 15,
+    marginBottom: 4,
+  },
+  qrCode: {
+    width: 70,
+    height: 70,
+    marginLeft: 10,
+    marginTop: 10,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#130B2B',
+  },
+  noTicketsText: {
+    color: '#aaa',
+    fontSize: 20,
+    fontWeight: '500',
+  },
   cancelButtonContainer: {
-    padding: 15,
-    backgroundColor: '#000',
-    borderTopWidth: 1,
-    borderTopColor: '#000',
+    position: 'absolute',
+    bottom: 30,
+    left: 16,
+    right: 16,
   },
   cancelButton: {
-    backgroundColor: '#B6116B',
-    paddingVertical: 12,
-    borderRadius: 10,
+    backgroundColor: '#FE53BB',
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: 'center',
-    marginBottom:80,
-    height: 50,
+    shadowColor: '#FE53BB',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    marginBottom: 75,
   },
   cancelButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
+    letterSpacing: 1,
   },
+  expiredTicketCard: {
+    backgroundColor: '#3a3a3a',
+    opacity: 0.6,
+  },
+  
 });
 
 export default MyTicketsScreen;

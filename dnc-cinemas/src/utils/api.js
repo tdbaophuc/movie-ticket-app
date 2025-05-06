@@ -49,7 +49,7 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
-        console.log('❌ Không thể refresh token:', refreshError.message);
+        console.log('Không thể refresh token:', refreshError.message);
         await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
         await removeRefreshToken();
         return Promise.reject(refreshError);

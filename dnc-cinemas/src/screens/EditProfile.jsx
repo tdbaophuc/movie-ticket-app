@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import api from '../utils/api';
 import { useNavigation } from '@react-navigation/native';
@@ -52,7 +52,7 @@ export default function EditProfile() {
 
     setUpdating(true);
     try {
-      await api.put(`/user/${userId}`, formData); // Gửi đúng userId
+      await api.put(`/user/${userId}`, formData);
       Alert.alert('Thành công', 'Thông tin đã được cập nhật!');
       navigation.goBack();
     } catch (error) {
@@ -69,47 +69,61 @@ export default function EditProfile() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scroll}>
+       
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={26} color="#ccc" />
+          </TouchableOpacity>
 
-        <Text style={styles.title}>Chỉnh sửa thông tin</Text>
+          <Text style={styles.title}>Chỉnh sửa thông tin</Text>
+          <View style={styles.card}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Họ và tên</Text>
+            <TextInput
+              value={formData.name}
+              onChangeText={val => handleChange('name', val)}
+              placeholder="Nhập họ tên"
+              placeholderTextColor="#aaa"
+              style={styles.input}
+            />
+          </View>
+         
 
-        <Text style={styles.label}>Tên</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.name}
-          onChangeText={(text) => handleChange('name', text)}
-          placeholder="Nhập tên"
-        />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              value={formData.email}
+              onChangeText={val => handleChange('email', val)}
+              placeholder="example@gmail.com"
+              placeholderTextColor="#aaa"
+              keyboardType="email-address"
+              style={styles.input}
+            />
+          </View>
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.email}
-          onChangeText={(text) => handleChange('email', text)}
-          placeholder="Nhập email"
-          keyboardType="email-address"
-        />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Tên đăng nhập</Text>
+            <TextInput
+              value={formData.username}
+              onChangeText={val => handleChange('username', val)}
+              placeholder="Tên đăng nhập"
+              placeholderTextColor="#aaa"
+              style={styles.input}
+            />
+          </View>
+          </View>
 
-        <Text style={styles.label}>Tên đăng nhập</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.username}
-          onChangeText={(text) => handleChange('username', text)}
-          placeholder="Tên đăng nhập"
-        />
-
-        <TouchableOpacity
-          onPress={handleSave}
-          style={styles.saveButton}
-          disabled={updating}
-        >
-          <Text style={styles.saveButtonText}>
-            {updating ? 'Đang lưu...' : 'Lưu thay đổi'}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSave}
+            style={[styles.saveButton, updating && { opacity: 0.7 }]}
+            activeOpacity={0.8}
+            disabled={updating}
+          >
+            <Text style={styles.saveButtonText}>
+              {updating ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Text>
+          </TouchableOpacity>
+        
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -118,42 +132,65 @@ export default function EditProfile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#130B2B',
+    paddingTop: 50,
   },
-  scrollContainer: {
+  scroll: {
     padding: 24,
+    justifyContent: 'center',
+  },
+  card: {
+    backgroundColor: '#1B1E2C',
+    padding: 24,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+  },
+  backButton: {
+    marginLeft: 20,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#2E1371',
+    color: '#E4E4E4',
+    marginBottom: 24,
     textAlign: 'center',
   },
+  inputGroup: {
+    marginBottom: 20,
+  },
   label: {
-    fontSize: 16,
-    marginTop: 16,
-    marginBottom: 4,
-    color: '#333',
+    color: '#B0BEC5',
+    fontSize: 15,
+    marginBottom: 8,
+    fontWeight: '600',
   },
   input: {
-    height: 45,
+    backgroundColor: '#2E2F3E',
+    color: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#f9f9f9',
+    borderColor: '#2E1371',
   },
   saveButton: {
-    marginTop: 30,
-    backgroundColor: '#09FBD3',
+    backgroundColor: '#2E1371',
     paddingVertical: 14,
     borderRadius: 30,
     alignItems: 'center',
+    marginTop: 30,
+    shadowColor: '#2E1371',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
   },
   saveButtonText: {
-    fontSize: 16,
-    color: '#000',
+    color: '#fff',
+    fontSize: 17,
     fontWeight: 'bold',
   },
 });
