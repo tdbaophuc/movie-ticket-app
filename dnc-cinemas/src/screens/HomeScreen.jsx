@@ -13,6 +13,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import api from '../utils/api';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 const HomeScreen = ({ navigation }) => {
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -78,7 +81,13 @@ const HomeScreen = ({ navigation }) => {
         .sort((a, b) => (b.bookedCount || 0) - (a.bookedCount || 0))
         .slice(0, 10);
 
-      setNowShowing(nowShowing);
+      // Sắp xếp phim đang chiếu theo thời gian cập nhật mới nhất
+const sortedNowShowing = nowShowing.sort(
+  (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+);
+
+setNowShowing(sortedNowShowing);
+
       setComingSoon(comingSoon);
       setTopMovies(topMovies);
     } catch (err) {
@@ -123,6 +132,12 @@ const HomeScreen = ({ navigation }) => {
               placeholderTextColor="#999"
               style={styles.searchInput}
             />
+            <Icon
+    name="search-outline"
+    size={22}
+    color="#999"
+    style={{ position: 'absolute', right: 20, top: 12 }}
+  />
             {searchKeyword.trim() !== '' && (
               <View style={styles.searchDropdown}>
                 {isLoading ? (
@@ -154,6 +169,7 @@ const HomeScreen = ({ navigation }) => {
           {renderMovieRow('Đặc biệt', topMovies)}
         </ScrollView>
       </TouchableWithoutFeedback>
+      
     </SafeAreaView>
   );
 };
@@ -164,88 +180,95 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#130B2B',
-    color: '#fff',
   },
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 20,
     backgroundColor: '#130B2B',
-
   },
   logo: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 20,
+    marginBottom: 30,
     textAlign: 'center',
-
   },
   searchContainer: {
     position: 'relative',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   searchInput: {
     backgroundColor: '#21232F',
     color: '#fff',
-    padding: 12,
-    borderRadius: 20,
-    fontSize: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 25,
+    fontSize: 18,
+    marginBottom: 15,
   },
   searchDropdown: {
     position: 'absolute',
-    top: 55,
+    top: 60,
     left: 0,
     right: 0,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1E1B2E',
     borderRadius: 16,
     zIndex: 10,
-    elevation: 6,
+    elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    padding: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
     borderWidth: 1,
-    borderColor: '#F2F2F2',
+    borderColor: '#302D4C',
   },
   searchItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 6,
+    borderRadius: 12,
+    backgroundColor: '#2A2642',
   },
   searchImage: {
-    width: 44,
-    height: 64,
-    borderRadius: 8,
+    width: 45,
+    height: 65,
+    borderRadius: 10,
     marginRight: 12,
   },
   searchTitle: {
     fontSize: 16,
-    color: '#002D62',
+    color: '#FFFFFF',
     flexShrink: 1,
   },
   noResults: {
-    fontSize: 16,
-    color: '#888',
+    fontSize: 15,
+    color: '#E44D98',
     textAlign: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
+  
   movieSection: {
-    marginBottom: 28,
+    marginBottom: 30,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 12,
+    marginBottom: 15,
   },
   movieItem: {
-    marginRight: 12,
+    marginRight: 15,
   },
   moviePoster: {
-    width: 120,
-    height: 180,
-    borderRadius: 16,
+    width: 140,
+    height: 210,
+    borderRadius: 20,
     backgroundColor: '#F2F2F2',
+    borderWidth: 2,
+    borderColor: '#2E1371',
   },
 });

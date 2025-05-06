@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const PaymentScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { selectedSeats, showtimeId } = route.params || {}; // nhận params từ trang trước (danh sách ghế đã chọn + id suất chiếu)
+  const { selectedSeats, showtimeId } = route.params || {}; 
 
   const { authToken, refreshAccessToken } = useAuth();
 
@@ -46,7 +46,7 @@ const PaymentScreen = () => {
           }
         });
 
-        setBookingId(res.data.booking._id); // lưu BookingId
+        setBookingId(res.data.booking._id); 
       } catch (error) {
         console.error('Lỗi hold vé:', error.response?.data || error.message);
         Alert.alert('Lỗi', error.response?.data?.message || 'Không thể giữ vé.');
@@ -165,7 +165,7 @@ const PaymentScreen = () => {
         <Text style={styles.title}>Thanh toán vé</Text>
 
         {/* Đếm ngược */}
-        <Text style={styles.countdown}>Thời gian còn lại: {formatCountdown(countdown)}</Text>
+        <Text style={styles.countdown}>Hãy thanh toán trong: {formatCountdown(countdown)}</Text>
 
         {/* Các ô nhập thông tin thanh toán giả */}
         <TextInput

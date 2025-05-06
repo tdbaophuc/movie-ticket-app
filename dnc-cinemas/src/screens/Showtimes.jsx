@@ -33,30 +33,36 @@ const Showtimes = ({ navigation }) => {
         const res = await api.get(`/showtimes/movie/${movieId}`);
         const data = res.data;
         setShowtimes(data);
-
-        // Lấy danh sách các ngày duy nhất
+  
+        // Lấy toàn bộ ngày chiếu, cả quá khứ và tương lai
         const dateSet = new Set(
           data.map((item) =>
             new Date(item.dateTime).toDateString()
           )
         );
-        const dateArray = [...dateSet];
+        const dateArray = [...dateSet].sort((a, b) => new Date(a) - new Date(b));
         setDates(dateArray);
-        setSelectedDate(dateArray[0]);
+  
+        // Ưu tiên chọn ngày hiện tại nếu có
+        const today = new Date().toDateString();
+        setSelectedDate(dateArray.includes(today) ? today : dateArray[0]);
+  
       } catch (err) {
         console.error('Lỗi khi tải suất chiếu:', err.message);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchShowtimes();
   }, [movieId]);
+  
 
   const filteredShowtimes = showtimes.filter(
     (s) =>
       new Date(s.dateTime).toDateString() === selectedDate
   );
+
 
   return (
     <ImageBackground
@@ -93,24 +99,33 @@ const Showtimes = ({ navigation }) => {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.dateList}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.dateItem,
-                selectedDate === item && styles.dateItemActive,
-              ]}
-              onPress={() => setSelectedDate(item)}
-            >
-              <Text
+          renderItem={({ item }) => {
+            const isPastDate = new Date(item) < new Date(new Date().toDateString());
+
+            return (
+              <TouchableOpacity
+                disabled={isPastDate}
                 style={[
-                  styles.dateText,
-                  selectedDate === item && styles.dateTextActive,
+                  styles.dateItem,
+                  selectedDate === item && styles.dateItemActive,
+                  isPastDate && { backgroundColor: '#555' }
                 ]}
+                onPress={() => {
+                  if (!isPastDate) setSelectedDate(item);
+                }}
               >
-                {item.split(' ').slice(0, 2).join(' ')}
-              </Text>
-            </TouchableOpacity>
-          )}
+                <Text
+                  style={[
+                    styles.dateText,
+                    selectedDate === item && styles.dateTextActive,
+                    isPastDate && { color: '#999' }
+                  ]}
+                >
+                  {item.split(' ').slice(0, 2).join(' ')}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
         />
 
         {/* Chọn suất chiếu */}
@@ -121,33 +136,42 @@ const Showtimes = ({ navigation }) => {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.timeList}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.timeItem}
-              onPress={() => {
-                navigation.navigate('BookingScreen', {
-                  showtimeId: item._id,
-                  movieTitle: movieTitle,
-                  dateTime: item.dateTime,
-                  ticketPrice: item.ticketPrice,
- 
-                });
-              }}
-            >
-              <Text style={styles.timeText}>
-                {new Date(item.dateTime).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </Text>
-              <Text style={styles.format}>
-                {item.format} - {item.language}
-              </Text>
-              <Text style={styles.price}>
-                {item.ticketPrice.toLocaleString()}₫
-              </Text>
-            </TouchableOpacity>
-          )}
+          renderItem={({ item }) => {
+            const isPastTime = new Date(item.dateTime) < new Date();
+
+            return (
+              <TouchableOpacity
+                disabled={isPastTime}
+                style={[
+                  styles.timeItem,
+                  isPastTime && { backgroundColor: '#555' }
+                ]}
+                onPress={() => {
+                  if (!isPastTime) {
+                    navigation.navigate('BookingScreen', {
+                      showtimeId: item._id,
+                      movieTitle: movieTitle,
+                      dateTime: item.dateTime,
+                      ticketPrice: item.ticketPrice,
+                    });
+                  }
+                }}
+              >
+                <Text style={[styles.timeText, isPastTime && { color: '#999' }]}>
+                  {new Date(item.dateTime).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </Text>
+                <Text style={[styles.format, isPastTime && { color: '#999' }]}>
+                  {item.format} - {item.language}
+                </Text>
+                <Text style={[styles.price, isPastTime && { color: '#999' }]}>
+                  {item.ticketPrice.toLocaleString()}₫
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
         />
       </View>
       </LinearGradient>
