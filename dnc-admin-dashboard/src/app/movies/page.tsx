@@ -17,7 +17,7 @@ interface Movie {
   duration: number;
   poster: string;
   description: string;
-  shpowtimes: string[]; 
+  showtimes: string[]; 
 
 }
 

@@ -28,7 +28,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Route đăng nhập người dùng (sử dụng tên đăng nhập thay vì email)
+// Route đăng nhập người dùng 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -150,6 +150,17 @@ router.get('/me', authMiddleware, async (req, res) => {
     res.json(userData);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy thông tin người dùng', error: error.message });
+  }
+});
+
+// Lấy danh sách tất cả người dùng (chỉ dành cho admin)
+router.get('/admin/users', authMiddleware, authorize(['admin']), async (req, res) => {
+  try {
+    const users = await User.find().select('-password -refreshToken');
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
   }
 });
 

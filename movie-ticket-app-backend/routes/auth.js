@@ -15,8 +15,11 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Tài khoản đã tồn tại' });
     }
 
+    // Nếu không có role, gán mặc định là 'user'
+    const userRole = role || 'user';
+
     // Tạo tài khoản mới
-    const newUser = new User({ username, password, name, email, role });
+    const newUser = new User({ username, password, name, email, role: userRole });
     await newUser.save();
 
     res.status(201).json({ message: 'Đăng ký thành công' });

@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'customer'],
     default: 'customer',
   },
+  status: {
+    type: String,
+    enum: ['active', 'inactive', 'banned'],
+    default: 'active',
+  },
   refreshToken: { type: String }, 
 });
 

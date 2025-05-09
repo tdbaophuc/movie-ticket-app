@@ -1,104 +1,119 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Box, Button, Modal, TextField, Typography } from '@mui/material';
+import {
+  Box, Button, Modal, TextField, Typography
+} from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import api from '../../utils/api'; // Import API instance
+import api from '../../utils/api';
 
-const columns: GridColDef[] = [
-  { field: 'id', headerName: 'ID', width: 100 },
-  { field: 'user', headerName: 'Người dùng', width: 200 },
-  { field: 'movie', headerName: 'Tên phim', width: 180 },
-  { field: 'showtime', headerName: 'Suất chiếu', width: 180 },
-  { field: 'action', headerName: 'Hành động', width: 180, renderCell: (params) => (
-    <>
-      <Button variant="contained" color="primary" onClick={() => handleEdit(params.row)}>
-        Sửa
-      </Button>
-      <Button variant="contained" color="secondary" onClick={() => handleDelete(params.row.id)}>
-        Xóa
-      </Button>
-    </>
-  )}
-];
-
-export default function BookingsPage() {
+const BookingsPage = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [currentBooking, setCurrentBooking] = useState<any>({});
-  
+
   useEffect(() => {
+    
     const fetchBookings = async () => {
       try {
-        const response = await api.get('/bookings'); // Lấy danh sách đơn đặt vé
-        setBookings(response.data);
-      } catch (error) {
-        console.error('Lỗi khi lấy dữ liệu đơn đặt vé:', error);
+        const res = await api.get('/bookings/admin/bookings');
+        const formatted = res.data.bookings.map((b: any, idx: number) => ({
+          id: b._id,
+          user: b.user?.name || 'Ẩn danh',
+          userMail: b.user?.email || 'Ẩn danh',
+          movie: b.showtime?.movie?.title || 'Không rõ',
+          showtime: b.showtime?.dateTime || '',
+          room: b.showtime?.room?.name || 'Không rõ',
+          seats: b.seats.join(', '),
+          status: b.status,
+          raw: b, // để dùng khi sửa
+        }));
+        setBookings(formatted);
+      } catch (err) {
+        console.error('Lỗi lấy danh sách vé:', err);
       }
     };
 
     fetchBookings();
   }, []);
 
-  const handleEdit = (booking: any) => {
-    setCurrentBooking(booking);
+  const handleEdit = (row: any) => {
+    setCurrentBooking(row.raw);
     setOpen(true);
   };
 
-  const handleDelete = async (bookingId: string) => {
+  const handleDelete = async (id: string) => {
     try {
-      await api.delete(`/bookings/${bookingId}`); // Xóa đơn đặt vé theo ID
-      setBookings(bookings.filter((booking) => booking.id !== bookingId)); // Cập nhật lại danh sách
-    } catch (error) {
-      console.error('Lỗi khi xóa đơn đặt vé:', error);
+      await api.delete(`bookings/admin/bookings/${id}`);
+      setBookings(bookings.filter((b) => b.id !== id));
+    } catch (err) {
+      console.error('Lỗi xóa vé:', err);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const { _id, seats } = currentBooking;
+      const res = await api.put(`bookings/admin/bookings/${_id}`, { seats });
+      const updated = res.data.booking;
+      const updatedRow = {
+        ...bookings.find((b) => b.id === updated._id),
+        seats: updated.seats.join(', '),
+        raw: updated,
+      };
+      setBookings(bookings.map((b) => (b.id === updated._id ? updatedRow : b)));
+      setOpen(false);
+    } catch (err) {
+      console.error('Lỗi lưu vé:', err);
     }
   };
 
   const handleClose = () => setOpen(false);
 
-  const handleSave = async () => {
-    try {
-      const response = currentBooking.id
-        ? await api.put(`/bookings/${currentBooking.id}`, currentBooking) // Cập nhật thông tin đơn đặt vé
-        : await api.post('/bookings', currentBooking); // Thêm đơn đặt vé mới
-
-      setBookings(bookings.map((booking) => (booking.id === response.data.id ? response.data : booking)));
-      setOpen(false);
-    } catch (error) {
-      console.error('Lỗi khi lưu thông tin đơn đặt vé:', error);
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: 'ID', width: 100 },
+    { field: 'user', headerName: 'Người dùng', width: 150 },
+    { field: 'userMail', headerName: 'Email người dùng', width: 200 },
+    { field: 'movie', headerName: 'Tên phim', width: 200 },
+    { field: 'showtime', headerName: 'Suất chiếu', width: 200 },
+    { field: 'room', headerName: 'Phòng chiếu', width: 100 },
+    { field: 'seats', headerName: 'Ghế', width: 100 },
+    { field: 'status', headerName: 'Trạng thái', width: 100 },
+    {
+      field: 'action',
+      headerName: 'Hành động',
+      width: 200,
+      renderCell: (params) => (
+        <>
+          <Button onClick={() => handleEdit(params.row)} variant="outlined" sx={{ mr: 1 }}>Cập nhật</Button>
+          <Button onClick={() => handleDelete(params.row.id)} color="error" variant="outlined">Huỷ</Button>
+        </>
+      )
     }
-  };
+  ];
 
   return (
-    <Box sx={{ height: 400, width: '100%' }}>
-      <DataGrid rows={bookings} columns={columns} pageSize={5} />
+    <Box sx={{ height: 700, width: '100%' }}>
+      <Typography variant="h5" sx={{ mb: 2 }}>Quản lý vé</Typography>
+      <DataGrid rows={bookings} columns={columns} pageSize={5}   />
       <Modal open={open} onClose={handleClose}>
-        <Box sx={{ padding: 3, backgroundColor: 'white', width: 400, margin: 'auto', marginTop: '20%' }}>
-          <Typography variant="h6">{currentBooking.id ? 'Sửa đơn đặt vé' : 'Thêm đơn đặt vé'}</Typography>
+        <Box sx={{ p: 3, backgroundColor: 'white', width: 400, mx: 'auto', mt: '10%' }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>Sửa vé</Typography>
+          
           <TextField
-            label="Người dùng"
+            label="Ghế (cách nhau bởi dấu phẩy)"
             fullWidth
-            value={currentBooking.user || ''}
-            onChange={(e) => setCurrentBooking({ ...currentBooking, user: e.target.value })}
-            sx={{ marginBottom: 2 }}
+            value={currentBooking.seats?.join(', ') || ''}
+            onChange={(e) =>
+              setCurrentBooking({ ...currentBooking, seats: e.target.value.split(',').map((s) => s.trim()) })
+            }
+            sx={{ mb: 2 }}
           />
-          <TextField
-            label="Tên phim"
-            fullWidth
-            value={currentBooking.movie || ''}
-            onChange={(e) => setCurrentBooking({ ...currentBooking, movie: e.target.value })}
-            sx={{ marginBottom: 2 }}
-          />
-          <TextField
-            label="Suất chiếu"
-            fullWidth
-            value={currentBooking.showtime || ''}
-            onChange={(e) => setCurrentBooking({ ...currentBooking, showtime: e.target.value })}
-            sx={{ marginBottom: 2 }}
-          />
-          <Button variant="contained" onClick={handleSave}>Lưu</Button>
+          <Button variant="contained" onClick={handleSave}>Lưu thay đổi</Button>
         </Box>
       </Modal>
     </Box>
   );
-}
+};
+
+export default BookingsPage;

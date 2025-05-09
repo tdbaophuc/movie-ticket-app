@@ -29,6 +29,7 @@ const MyTicketsScreen = () => {
       });
       const now = new Date();
 const sortedTickets = res.data.bookings
+.filter(ticket => ticket.status === 'paid')
   .map(ticket => ({
     ...ticket,
     isExpired: new Date(ticket.showtime?.dateTime) < now,

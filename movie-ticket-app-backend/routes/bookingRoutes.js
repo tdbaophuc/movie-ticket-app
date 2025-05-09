@@ -101,8 +101,8 @@ router.get("/my", authMiddleware, authorizeRoles("customer"), async (req, res) =
           { path: "room", select: "name" },
         ]
       })
-      .select("seats showtime status")   // nhớ lấy thêm status nữa
-      .exec();  // Bỏ .lean()
+      .select("seats showtime status")   
+      .exec();  
 
     if (!bookings || bookings.length === 0) {
       return res.status(404).json({ message: "Không có vé nào" });
@@ -186,6 +186,100 @@ router.get("/reserved-seats/:showtimeId", async (req, res) => {
     res.status(500).json({ message: "Lỗi khi lấy ghế đã đặt", error: error.message });
   }
 });
+
+// 1. Xem tất cả vé (Admin)
+router.get("/admin/bookings", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const bookings = await Booking.find().populate({
+      path: "showtime",
+      populate: [
+        { path: "movie", select: "title poster" },
+        { path: "room", select: "name" }
+      ]
+    })
+    .populate("user", "name email")
+    .exec();
+
+    if (!bookings || bookings.length === 0) {
+      return res.status(404).json({ message: "Không có vé nào" });
+    }
+
+    res.json({ bookings });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi lấy danh sách vé", error: error.message });
+  }
+});
+
+
+// 2. Sửa thông tin vé (Admin)
+router.put("/admin/bookings/:bookingId", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId).populate("showtime");
+
+    if (!booking) {
+      return res.status(404).json({ message: "Không tìm thấy vé" });
+    }
+
+    if (req.body.seats) {
+      const seats = req.body.seats;
+
+      // Kiểm tra xem các ghế mới có bị trùng không
+      const existingBookings = await Booking.find({
+        showtime: booking.showtime._id,
+        _id: { $ne: booking._id }, // bỏ qua chính vé đang sửa
+        status: { $ne: "cancelled" }
+      });
+
+      const alreadyBookedSeats = existingBookings.flatMap((b) => b.seats);
+      const overlap = seats.filter((seat) => alreadyBookedSeats.includes(seat));
+      if (overlap.length > 0) {
+        return res.status(400).json({ message: `Ghế đã có người giữ/đặt: ${overlap.join(", ")}` });
+      }
+
+      booking.seats = seats;
+    }
+
+    // Có thể cập nhật thêm các trường khác nếu cần, ví dụ:
+    // if (req.body.status) booking.status = req.body.status;
+
+    await booking.save();
+
+    res.json({ message: "Thông tin vé đã được cập nhật", booking });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi sửa vé", error: error.message });
+  }
+});
+
+// 3. Huỷ vé (Admin)
+router.delete("/admin/bookings/:bookingId", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId).populate("showtime");
+
+    if (!booking) {
+      return res.status(404).json({ message: "Không tìm thấy vé" });
+    }
+
+    // Gỡ trạng thái isBooked trong suất chiếu nếu vé đã thanh toán
+    if (booking.status === "paid") {
+      const showtime = await Showtime.findById(booking.showtime._id);
+      booking.seats.forEach((seatNumber) => {
+        const seatIndex = showtime.seats.findIndex((s) => s.seatNumber === seatNumber);
+        if (seatIndex !== -1) {
+          showtime.seats[seatIndex].isBooked = false;
+        }
+      });
+      await showtime.save();
+    }
+    booking.status = "cancelled";
+    await booking.save();
+
+    res.json({ message: "Đã huỷ vé thành công" });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi huỷ vé", error: error.message });
+  }
+});
+
+
 
 
 // Gửi vé về mail
