@@ -3,7 +3,7 @@
 import { Box, CssBaseline } from '@mui/material';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import LogoutButton from '@/components/LogoutButton'; // 👉 import nút Logout đã tách
+import LogoutButton from '@/components/LogoutButton'; 
 import { ReactNode } from 'react';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

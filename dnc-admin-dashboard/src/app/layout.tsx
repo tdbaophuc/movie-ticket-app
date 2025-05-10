@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'; // Sử dụng usePathname thay v
 import './globals.css';
 import { ReactNode } from 'react';
 
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname(); // Lấy đường dẫn hiện tại
   const isLoginPage = pathname === '/login'; // Kiểm tra xem đây có phải là trang login không

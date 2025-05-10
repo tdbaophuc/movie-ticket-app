@@ -7,3 +7,4 @@ dnc-admin-dashboard/.next/* filter=lfs diff=lfs merge=lfs -text
 dnc-cinemas/node_modules/* filter=lfs diff=lfs merge=lfs -text
 dnc-cinemas/.expo/* filter=lfs diff=lfs merge=lfs -text
 movie-ticket-app-backend/node_modules/* filter=lfs diff=lfs merge=lfs -text
+dnc-admin-dashboard/material-kit-react/* filter=lfs diff=lfs merge=lfs -text

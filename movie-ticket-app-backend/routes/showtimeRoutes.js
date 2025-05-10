@@ -82,7 +82,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// showtimeRoutes.js
+
 router.get('/:id', async (req, res) => {
   try {
     const showtime = await Showtime.findById(req.params.id);

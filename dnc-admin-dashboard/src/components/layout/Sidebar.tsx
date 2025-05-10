@@ -10,7 +10,8 @@ const menuItems = [
   { label: 'Suất chiếu', href: '/showtimes' },
   { label: 'Phòng chiếu', href: '/rooms' },
   { label: 'Người dùng', href: '/users' },
-  { label: 'Đơn đặt vé', href: '/bookings' },
+  { label: 'Vé', href: '/bookings' },
+  { label: 'Thống kê', href: '/statistics' },
 ];
 
 export default function Sidebar() {
