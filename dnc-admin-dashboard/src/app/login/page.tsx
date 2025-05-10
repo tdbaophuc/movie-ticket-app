@@ -27,7 +27,7 @@ export default function LoginPage() {
         password,
       });
   
-      const { accessToken, refreshToken, role } = res.data;
+      const { accessToken, refreshToken, role, userId } = res.data;
   
       if (role !== 'admin') {
         setError('Chỉ tài khoản admin mới được truy cập dashboard.');
@@ -38,6 +38,7 @@ export default function LoginPage() {
       localStorage.setItem('refreshToken', refreshToken);  // Lưu refresh token
       localStorage.setItem('role', role);
       localStorage.setItem('username', username);
+      localStorage.setItem('adminId', userId);
   
       router.push('/movies');
       document.cookie = `accessToken=${accessToken}; path=/; max-age=3600`;

@@ -7,7 +7,8 @@ import api from '../../utils/api';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import viLocale from 'date-fns/locale/vi'; // để hiển thị tiếng Việt (nếu muốn)
+import viLocale from 'date-fns/locale/vi'; 
+import AddIcon from '@mui/icons-material/Add';
 
 
 interface Movie {
@@ -129,21 +130,35 @@ export default function MoviesPage() {
       renderCell: (params) => (
         <>
           <Button
-            variant="contained"
-            size="small"
-            sx={{ mr: 1 }}
-            onClick={() => handleEdit(params.row)}
-          >
-            Sửa
-          </Button>
-          <Button
-            variant="outlined"
-            color="error"
-            size="small"
-            onClick={() => handleDelete(params.row.id)}
-          >
-            Xoá
-          </Button>
+  variant="contained"
+  color="info"
+  size="small"
+  sx={{
+    mr: 1,
+    borderRadius: 2,
+    textTransform: 'none',
+    boxShadow: 1,
+    '&:hover': { backgroundColor: '#0288d1' }
+  }}
+  onClick={() => handleEdit(params.row)}
+>
+  Cập nhật
+</Button>
+
+<Button
+  variant="outlined"
+  color="error"
+  size="small"
+  sx={{
+    borderRadius: 2,
+    textTransform: 'none',
+    '&:hover': { backgroundColor: '#ffebee' }
+  }}
+  onClick={() => handleDelete(params.row.id)}
+>
+  Gỡ bỏ
+</Button>
+
         </>
       ),
     },
@@ -154,25 +169,65 @@ export default function MoviesPage() {
       <Typography variant="h5" sx={{ mb: 2 }}>
         Quản lý phim
       </Typography>
-      <Button variant="contained" color="primary" sx={{ mb: 2 }} onClick={handleOpenAdd}>
-        Thêm phim
-      </Button>
+      <Button
+  variant="contained"
+  color="primary"
+  startIcon={<AddIcon />}
+  sx={{ mb: 2, borderRadius: 2, textTransform: 'none', boxShadow: 2 }}
+  onClick={handleOpenAdd}
+>
+  Thêm phim
+</Button>
       <Box sx={{ height: 600 }}>
-        <DataGrid rows={movies} columns={columns} pageSize={7} rowHeight={150} getRowHeight={() => 'auto'}/>
+        <DataGrid rows={movies}
+    columns={columns}
+    pageSize={7}
+    rowHeight={150}
+    getRowHeight={() => 'auto'}
+    sx={{
+      bgcolor: '#fff',
+      borderRadius: 3,
+      boxShadow: 4,
+      overflowX: 'hidden',
+      '& .MuiDataGrid-columnHeaders': {
+        backgroundColor: '#f0f0f0',
+        fontWeight: 'bold',
+        fontSize: 16,
+      },
+      '& .MuiDataGrid-cell': {
+        padding: 1,
+        fontSize: 14,
+      },
+      '& .MuiDataGrid-row:hover': {
+        backgroundColor: '#e3f2fd',
+        cursor: 'pointer'
+      },
+      '& .MuiDataGrid-columnHeaderTitle': {
+        fontWeight: 'bold',
+      },
+      '& .MuiDataGrid-footerContainer': {
+        borderTop: '1px solid #e0e0e0',
+        backgroundColor: '#fafafa',
+      }
+      
+      
+    }}/>
       </Box>
       <Modal open={open} onClose={handleClose}>
-        <Box sx={{ padding: 3,
-    backgroundColor: 'white',
-    width: 400,
+  <Box sx={{
+    p: 3,
+    bgcolor: 'background.paper',
+    width: 450,
     maxHeight: '90vh',
-    overflow: 'auto',
-    paddingBottom: 5,
+    overflowY: 'auto',
     position: 'absolute',
     top: '50%',
-    right: 100,
-    transform: 'translateY(-50%)',
-    borderRadius: 2,
-    boxShadow: 24,}}>
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    borderRadius: 3,
+    boxShadow: 24,
+  }}>
+
           <Typography variant="h6" sx={{ mb: 2 }}>
             {isEdit ? 'Sửa phim' : 'Thêm phim'}
           </Typography>
@@ -216,7 +271,12 @@ export default function MoviesPage() {
           />
           <Button
             variant="outlined"
-            sx={{ mt: 1, mb: 2 }}
+  fullWidth
+  sx={{
+    mt: 1, mb: 2, borderRadius: 2,
+    textTransform: 'none',
+    '&:hover': { backgroundColor: '#f5f5f5' }
+  }}
             onClick={() => {
               if (newShowtime && !isNaN(newShowtime.getTime())) {
                 setCurrentMovie({
@@ -258,9 +318,20 @@ export default function MoviesPage() {
   sx={{ marginBottom: 2 }}
 />
 
-          <Button variant="contained" onClick={handleSave}>
-            Lưu
-          </Button>
+          <Button
+  variant="contained"
+  fullWidth
+  sx={{
+    mt: 2,
+    borderRadius: 2,
+    textTransform: 'none',
+    backgroundColor: '#1976d2',
+    '&:hover': { backgroundColor: '#1565c0' }
+  }}
+  onClick={handleSave}
+>
+  Lưu
+</Button>
         </Box>
       </Modal>
     </Box>

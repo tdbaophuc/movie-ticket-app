@@ -85,8 +85,24 @@ const BookingsPage = () => {
       width: 200,
       renderCell: (params) => (
         <>
-          <Button onClick={() => handleEdit(params.row)} variant="outlined" sx={{ mr: 1 }}>Cập nhật</Button>
-          <Button onClick={() => handleDelete(params.row.id)} color="error" variant="outlined">Huỷ</Button>
+          <Button variant="contained"
+  color="info"
+  size="small"
+  sx={{
+    mr: 1,
+    borderRadius: 2,
+    textTransform: 'none',
+    boxShadow: 1,
+    '&:hover': { backgroundColor: '#0288d1' }
+  }} onClick={() => handleEdit(params.row)} variant="outlined" sx={{ mr: 1 }}>Cập nhật</Button>
+          <Button variant="outlined"
+  color="error"
+  size="small"
+  sx={{
+    borderRadius: 2,
+    textTransform: 'none',
+    '&:hover': { backgroundColor: '#ffebee' }
+  }} onClick={() => handleDelete(params.row.id)} color="error" variant="outlined">Huỷ vé</Button>
         </>
       )
     }
@@ -95,9 +111,46 @@ const BookingsPage = () => {
   return (
     <Box sx={{ height: 700, width: '100%' }}>
       <Typography variant="h5" sx={{ mb: 2 }}>Quản lý vé</Typography>
-      <DataGrid rows={bookings} columns={columns} pageSize={5}   />
+      <DataGrid  rows={bookings} columns={columns} pageSize={5} sx={{
+      bgcolor: '#fff',
+      borderRadius: 3,
+      boxShadow: 4,
+      overflowX: 'hidden',
+      '& .MuiDataGrid-columnHeaders': {
+        backgroundColor: '#f0f0f0',
+        fontWeight: 'bold',
+        fontSize: 16,
+      },
+      '& .MuiDataGrid-cell': {
+        padding: 1,
+        fontSize: 14,
+      },
+      '& .MuiDataGrid-row:hover': {
+        backgroundColor: '#e3f2fd',
+        cursor: 'pointer'
+      },
+      '& .MuiDataGrid-columnHeaderTitle': {
+        fontWeight: 'bold',
+      },
+      '& .MuiDataGrid-footerContainer': {
+        borderTop: '1px solid #e0e0e0',
+        backgroundColor: '#fafafa',
+      }
+      
+      
+    }}  />
       <Modal open={open} onClose={handleClose}>
-        <Box sx={{ p: 3, backgroundColor: 'white', width: 400, mx: 'auto', mt: '10%' }}>
+        <Box sx={{ p: 3,
+    bgcolor: 'background.paper',
+    width: 450,
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    borderRadius: 3,
+    boxShadow: 24, }}>
           <Typography variant="h6" sx={{ mb: 2 }}>Sửa vé</Typography>
           
           <TextField

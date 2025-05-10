@@ -12,10 +12,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <CssBaseline />
       <Sidebar />
       <Box sx={{ flexGrow: 1 }}>
-        <Header />
-
-        <LogoutButton />
-
         <Box sx={{ padding: 3 }}>{children}</Box>
       </Box>
     </Box>

@@ -272,50 +272,82 @@ const revenueBarData = {
 
 
   return (
-  <div style={{ padding: 24 }}>
-    <h1 style={{ marginBottom: 32 }}>Thống kê dữ liệu</h1>
+  <div style={{ padding: 24, fontFamily: "sans-serif", background: "#fff", minHeight: "100vh", }}>
+    <h1 style={{ marginBottom: 32, fontSize: 28, fontWeight: 600 }}>Thống kê</h1>
 
-    {/* Dòng 1: Biểu đồ tăng trưởng vé & tỷ lệ ghế */}
-    <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 40 }}>
-      <div style={{ flex: 1, minWidth: 300 }}>
-        <h3 style={{ marginBottom: 12 }}>Vé bán ra</h3>
+    {/* Dòng 1: Biểu đồ vé và doanh thu - lớn nhất */}
+    <div style={{ display: "flex", gap: 24, marginBottom: 32, flexWrap: "wrap" }}>
+      <div style={{
+        flex: 1,
+        minWidth: 300,
+        background: "#fff",
+        borderRadius: 12,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        padding: 20
+      }}>
+        <h3 style={{ marginBottom: 12 }}>Tăng trưởng vé bán theo tháng</h3>
         <Line data={ticketsGrowthData} />
       </div>
 
-      <div style={{ flex: 1, minWidth: 300 }}>
+      <div style={{
+        flex: 1,
+        minWidth: 300,
+        background: "#fff",
+        borderRadius: 12,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        padding: 20
+      }}>
+        <h3 style={{ marginBottom: 12 }}>Doanh thu theo tháng</h3>
+        <Bar
+          data={revenueBarData}
+          options={{
+            responsive: true,
+            scales: { y: { beginAtZero: true } },
+          }}
+        />
+      </div>
+    </div>
+
+    {/* Dòng 2: 3 biểu đồ phụ */}
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+      gap: 24
+    }}>
+      <div style={{
+        background: "#fff",
+        borderRadius: 12,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        padding: 20
+        
+      }}>
         <h3 style={{ marginBottom: 12 }}>Tỷ lệ ghế được đặt</h3>
         <Line data={seatRateLineData} options={seatRateLineOptions} />
       </div>
-    </div>
 
-    {/* Dòng 2: Suất chiếu & Pie tỉ lệ đặt */}
-    <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 40 }}>
-      <div style={{ flex: 1, minWidth: 350 }}>
-        <h3 style={{ marginBottom: 12 }}>Suất chiếu của phim</h3>
+      <div style={{
+        background: "#fff",
+        borderRadius: 12,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        padding: 20
+      }}>
+        <h3 style={{ marginBottom: 12 }}>Suất chiếu theo phim</h3>
         <Bar data={showtimeBarData} options={showtimeBarOptions} />
-
-        
       </div>
 
-      <div style={{ flex: 1, minWidth: 350 }}>
-        <h3 style={{ marginBottom: 12 }}>Tỷ lệ vé được đặt của phim</h3>
+      <div style={{
+        background: "#fff",
+        borderRadius: 12,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        padding: 20
+      }}>
+        <h3 style={{ marginBottom: 12 }}>Tỷ lệ vé bán theo phim</h3>
         <Pie data={pieChartData} options={pieChartOptions} />
       </div>
     </div>
-
-    {/* Dòng 3: Doanh thu */}
-    <div style={{ marginBottom: 40 }}>
-      <h3 style={{ marginBottom: 12 }}>Doanh thu theo tháng</h3>
-      <Bar
-        data={revenueBarData}
-        options={{
-          responsive: true,
-          scales: { y: { beginAtZero: true } },
-        }}
-      />
-    </div>
   </div>
 );
+
 };
 
 export default StatisticsPage;

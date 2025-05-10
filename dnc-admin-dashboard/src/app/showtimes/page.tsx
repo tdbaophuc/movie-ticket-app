@@ -4,6 +4,7 @@ import { Button, Box, Modal, TextField, Typography } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import AddIcon from '@mui/icons-material/Add';
 
 interface Showtime {
   id: string;
@@ -47,9 +48,9 @@ export default function ShowtimesPage() {
       ),
     },
     { field: 'movie', headerName: 'Tên phim', width: 150 },
-    { field: 'dateTime', headerName: 'Ngày và giờ chiếu', width: 150 },
-    { field: 'room', headerName: 'Phòng chiếu', width: 100 },
-    { field: 'roomCapacity', headerName: 'Tổng ghế', width: 80 },
+    { field: 'dateTime', headerName: 'Thời gian chiếu', width: 140 },
+    { field: 'room', headerName: 'Phòng chiếu', width: 120 },
+    { field: 'roomCapacity', headerName: 'Ghế', width: 60 },
     {
       field: 'availableSeats',
       headerName: 'Ghế còn lại',
@@ -57,22 +58,38 @@ export default function ShowtimesPage() {
       renderCell: (params) => availableSeatsMap[params.row.id] ?? 'Đang tải...',
     },
     
-    { field: 'ticketprice', headerName: 'Giá vé (VNĐ)', width: 100 },
+    { field: 'ticketprice', headerName: 'Giá vé (VNĐ)', width: 80 },
     { field: 'format', headerName: 'Định dạng', width: 100 },
     { field: 'language', headerName: 'Ngôn ngữ', width: 100 },
-    { field: 'note', headerName: 'Ghi chú', width: 120 },
-    { field: 'status', headerName: 'Trạng thái', width: 120 },
+    { field: 'note', headerName: 'Ghi chú', width: 100 },
+    { field: 'status', headerName: 'Trạng thái', width: 100 },
     {
       field: 'action',
       headerName: 'Hành động',
       width: 180,
       renderCell: (params) => (
         <Box display="flex" gap={1}>
-          <Button variant="contained" color="primary" onClick={() => handleEdit(params.row)}>
-            Sửa
+          <Button variant="contained"
+  color="info"
+  size="small"
+  sx={{
+    mr: 1,
+    borderRadius: 2,
+    textTransform: 'none',
+    boxShadow: 1,
+    '&:hover': { backgroundColor: '#0288d1' }
+  }} onClick={() => handleEdit(params.row)}>
+            Cập nhật
           </Button>
-          <Button variant="outlined" color="error" onClick={() => handleDelete(params.row.id)}>
-            Xoá
+          <Button variant="outlined"
+  color="error"
+  size="small"
+  sx={{
+    borderRadius: 2,
+    textTransform: 'none',
+    '&:hover': { backgroundColor: '#ffebee' }
+  }} onClick={() => handleDelete(params.row.id)}>
+            Gỡ bỏ
           </Button>
         </Box>
       ),
@@ -226,30 +243,60 @@ export default function ShowtimesPage() {
       <Typography variant="h5" sx={{ mb: 2 }}>
         Quản lý suất chiếu
       </Typography>
-      <Button variant="contained" color="success" sx={{ mb: 2 }} onClick={() => {
+      <Button variant="contained"
+  color="primary"
+  startIcon={<AddIcon />}
+  sx={{ mb: 2, borderRadius: 2, textTransform: 'none', boxShadow: 2 }} onClick={() => {
       setCurrentShowtime({});
       setOpen(true);
       }}> Thêm suất chiếu</Button>
-    <Box sx={{ height: 700, width: '100%' }}>
+    <Box sx={{ height: 590, width: '100%' }}>
       <DataGrid
         rows={showtimes}
         columns={columns}
         pageSize={5}
         rowHeight={150}
         getRowHeight={() => 'auto'}
+        sx={{
+      bgcolor: '#fff',
+      borderRadius: 3,
+      boxShadow: 4,
+      overflowX: 'hidden',
+      '& .MuiDataGrid-columnHeaders': {
+        backgroundColor: '#f0f0f0',
+        fontWeight: 'bold',
+        fontSize: 16,
+      },
+      '& .MuiDataGrid-cell': {
+        padding: 1,
+        fontSize: 14,
+      },
+      '& .MuiDataGrid-row:hover': {
+        backgroundColor: '#e3f2fd',
+        cursor: 'pointer'
+      },
+      '& .MuiDataGrid-columnHeaderTitle': {
+        fontWeight: 'bold',
+      },
+      '& .MuiDataGrid-footerContainer': {
+        borderTop: '1px solid #e0e0e0',
+        backgroundColor: '#fafafa',
+      }
+      
+      
+    }}
       />
       <Modal open={open} onClose={handleClose}>
-        <Box sx={{ padding: 3,
-    backgroundColor: 'white',
-    width: 400,
+        <Box sx={{  p: 3,
+    bgcolor: 'background.paper',
+    width: 450,
     maxHeight: '90vh',
-    overflow: 'auto',
-    paddingBottom: 5,
+    overflowY: 'auto',
     position: 'absolute',
     top: '50%',
-    right: 100,
-    transform: 'translateY(-50%)',
-    borderRadius: 2,
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    borderRadius: 3,
     boxShadow: 24, }}>
           <Typography variant="h6">Sửa suất chiếu</Typography>
           <Box sx={{ mb: 2 }}>
@@ -257,7 +304,13 @@ export default function ShowtimesPage() {
   <Typography variant="subtitle1" color="primary" sx={{ mb: 1 }}>
     {currentShowtime.movieTitle || 'Chưa chọn'}
   </Typography>
-  <Button variant="outlined" onClick={() => setMovieModalOpen(true)}>Chọn phim</Button>
+  <Button variant="outlined"
+  fullWidth
+  sx={{
+    mt: 1, mb: 2, borderRadius: 2,
+    textTransform: 'none',
+    '&:hover': { backgroundColor: '#f5f5f5' }
+  }} onClick={() => setMovieModalOpen(true)}>Chọn phim</Button>
 </Box>
 
 <TextField
@@ -270,14 +323,22 @@ export default function ShowtimesPage() {
                 dateTime: e.target.value // Cập nhật datetime khi người dùng thay đổi
               })}
               sx={{ marginBottom: 2 }}
+              InputLabelProps={{ shrink: true }}
             />
+          
 
           <Box sx={{ mb: 2 }}>
   <Typography variant="body1" sx={{ mb: 1 }}>Phòng chiếu đã chọn:</Typography>
   <Typography variant="subtitle1" color="secondary" sx={{ mb: 1 }}>
     {currentShowtime.roomName || 'Chưa chọn'}
   </Typography>
-  <Button variant="outlined" onClick={() => setRoomModalOpen(true)}>Chọn phòng</Button>
+  <Button variant="outlined"
+  fullWidth
+  sx={{
+    mt: 1, mb: 2, borderRadius: 2,
+    textTransform: 'none',
+    '&:hover': { backgroundColor: '#f5f5f5' }
+  }} onClick={() => setRoomModalOpen(true)}>Chọn phòng</Button>
 </Box>
 
           <TextField
@@ -309,7 +370,15 @@ export default function ShowtimesPage() {
             onChange={(e) => setCurrentShowtime({ ...currentShowtime, note: e.target.value })}
             sx={{ marginBottom: 2 }}
           />
-          <Button variant="contained" onClick={handleSave}>Lưu</Button>
+          <Button variant="contained"
+  fullWidth
+  sx={{
+    mt: 2,
+    borderRadius: 2,
+    textTransform: 'none',
+    backgroundColor: '#1976d2',
+    '&:hover': { backgroundColor: '#1565c0' }
+  }} onClick={handleSave}>Lưu</Button>
         </Box>
       </Modal>
       <Modal open={movieModalOpen} onClose={() => setMovieModalOpen(false)}>

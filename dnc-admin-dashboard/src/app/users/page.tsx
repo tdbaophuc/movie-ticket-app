@@ -4,11 +4,17 @@ import { useEffect, useState } from 'react';
 import { Box, Button, MenuItem, Select, Typography, Modal, TextField } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import api from '../../utils/api';
+import AddIcon from '@mui/icons-material/Add';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import BlockIcon from '@mui/icons-material/Block';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', password:'', status: 'active', role: 'admin' });
+  const currentAdminId = typeof window !== 'undefined' ? localStorage.getItem('adminId') : null;
+
 
   const fetchUsers = async () => {
     try {
@@ -51,58 +57,123 @@ export default function UsersPage() {
   };
 
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 250 },
-    { field: 'name', headerName: 'Tên người dùng', width: 200 },
-    { field: 'email', headerName: 'Email', width: 250 },
-    {
-      field: 'status',
-      headerName: 'Trạng thái',
-      width: 200,
-      renderCell: (params) => (
+  { field: 'id', headerName: 'ID', width: 250 },
+  { field: 'name', headerName: 'Tên người dùng', width: 200 },
+  { field: 'email', headerName: 'Email', width: 250 },
+  {
+    field: 'status',
+    headerName: 'Trạng thái',
+    width: 200,
+    renderCell: (params) => {
+      const isSelf = params.row.id === currentAdminId;
+      const statusValue = params.row.status;
+
+      const statusIcon = {
+        active: <CheckCircleIcon sx={{ color: 'green', mr: 1 }} />,
+        inactive: <RemoveCircleIcon sx={{ color: 'orange', mr: 1 }} />,
+        banned: <BlockIcon sx={{ color: 'red', mr: 1 }} />,
+      };
+
+      return (
         <Select
-          value={params.row.status || 'active'}
+          value={statusValue}
           onChange={(e) => handleStatusChange(params.row.id, e.target.value)}
           fullWidth
           variant="standard"
+          disabled={isSelf}
+          sx={{
+            fontWeight: 'bold',
+            color:
+              statusValue === 'active'
+                ? 'green'
+                : statusValue === 'inactive'
+                ? 'orange'
+                : 'red',
+            '& .MuiSelect-icon': {
+              color: '#888',
+            },
+          }}
         >
-          <MenuItem value="active">Active</MenuItem>
-          <MenuItem value="inactive">Inactive</MenuItem>
-          <MenuItem value="banned">Banned</MenuItem>
+          <MenuItem value="active">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {statusIcon.active} Active
+            </Box>
+          </MenuItem>
+          <MenuItem value="inactive">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {statusIcon.inactive} Inactive
+            </Box>
+          </MenuItem>
+          <MenuItem value="banned">
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {statusIcon.banned} Banned
+            </Box>
+          </MenuItem>
         </Select>
-      ),
+      );
     },
-  ];
+  },
+];
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>
+      <Typography variant="h5" sx={{ mb: 2 }}>
         Danh sách người dùng
       </Typography>
-      <Button variant="contained" color="primary" sx={{ mb: 2 }} onClick={() => setOpen(true)}>
-        Tạo tài khoản
+      <Button variant="contained"
+  color="primary"
+  startIcon={<AddIcon />}
+  sx={{ mb: 2, borderRadius: 2, textTransform: 'none', boxShadow: 2 }} onClick={() => setOpen(true)}>
+        Tạo tài khoản quản trị
       </Button>
-
-      <DataGrid rows={users} columns={columns} pageSize={5} />
-
+      <Box sx={{ height: 600 }}>
+      <DataGrid rows={users} columns={columns} pageSize={7} sx={{
+      bgcolor: '#fff',
+      borderRadius: 3,
+      boxShadow: 4,
+      overflowX: 'hidden',
+      '& .MuiDataGrid-columnHeaders': {
+        backgroundColor: '#f0f0f0',
+        fontWeight: 'bold',
+        fontSize: 16,
+      },
+      '& .MuiDataGrid-cell': {
+        padding: 1,
+        fontSize: 14,
+      },
+      '& .MuiDataGrid-row:hover': {
+        backgroundColor: '#e3f2fd',
+        cursor: 'pointer'
+      },
+      '& .MuiDataGrid-columnHeaderTitle': {
+        fontWeight: 'bold',
+      },
+      '& .MuiDataGrid-footerContainer': {
+        borderTop: '1px solid #e0e0e0',
+        backgroundColor: '#fafafa',
+      }
+      
+      
+    }}/>
+    </Box>
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box
           sx={{
-            padding: 3,
-            backgroundColor: 'white',
-            width: 400,
-            maxHeight: '90vh',
-            overflow: 'auto',
-            paddingBottom: 5,
-            position: 'absolute',
-            top: '50%',
-            right: 100,
-            transform: 'translateY(-50%)',
-            borderRadius: 2,
-            boxShadow: 24,
+           p: 3,
+    bgcolor: 'background.paper',
+    width: 450,
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    borderRadius: 3,
+    boxShadow: 24,
           }}
         >
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Tạo tài khoản mới
+            Tạo tài khoản quản trị
           </Typography>
 
           <TextField
@@ -136,7 +207,15 @@ export default function UsersPage() {
             sx={{ marginBottom: 2 }}
           />
 
-          <Button variant="contained" onClick={handleCreateUser}>
+          <Button variant="contained"
+  fullWidth
+  sx={{
+    mt: 2,
+    borderRadius: 2,
+    textTransform: 'none',
+    backgroundColor: '#1976d2',
+    '&:hover': { backgroundColor: '#1565c0' }
+  }} onClick={handleCreateUser}>
             Tạo tài khoản
           </Button>
         </Box>

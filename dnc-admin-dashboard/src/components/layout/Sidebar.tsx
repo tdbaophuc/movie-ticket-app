@@ -1,7 +1,18 @@
 'use client';
 
-import { Drawer, List, ListItemButton, ListItemText, Toolbar } from '@mui/material';
+import {
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemText,
+  Toolbar,
+  Typography,
+  Box,
+} from '@mui/material';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import Image from 'next/image';
+import LogoutButton from '@/components/LogoutButton';
 
 const drawerWidth = 240;
 
@@ -9,28 +20,80 @@ const menuItems = [
   { label: 'Phim', href: '/movies' },
   { label: 'Suất chiếu', href: '/showtimes' },
   { label: 'Phòng chiếu', href: '/rooms' },
-  { label: 'Người dùng', href: '/users' },
   { label: 'Vé', href: '/bookings' },
+  { label: 'Người dùng', href: '/users' },
   { label: 'Thống kê', href: '/statistics' },
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   return (
     <Drawer
       variant="permanent"
       sx={{
         width: drawerWidth,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+        [`& .MuiDrawer-paper`]: {
+          width: drawerWidth,
+          boxSizing: 'border-box',
+          backgroundColor: '#1e293b',
+          color: '#fff',
+          display: 'flex',
+          flexDirection: 'column',
+      
+          
+        },
       }}
     >
-      <Toolbar />
-      <List>
-        {menuItems.map((item) => (
-          <ListItemButton key={item.href} component={Link} href={item.href}>
-            <ListItemText primary={item.label} />
-          </ListItemButton>
-        ))}
-      </List>
+      <Toolbar sx={{ justifyContent: 'center', paddingY: 2 }}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Image src="/icon-logo-DNC.png" alt="Logo" width={49} height={49}/>
+          <Typography variant="h6" fontWeight="bold" noWrap>
+            DNC Admin
+          </Typography>
+        </Box>
+      </Toolbar>
+
+      <Box sx={{ flexGrow: 1 }}>
+        <List>
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <ListItemButton
+                key={item.href}
+                component={Link}
+                href={item.href}
+                sx={{
+                  borderRadius: 2,
+                  mx: 1,
+                  my: 0.5,
+                  color: isActive ? '#fff' : '#cbd5e1',
+                  backgroundColor: isActive ? '#2563eb' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: isActive
+                      ? '#2563eb'
+                      : 'rgba(255, 255, 255, 0.08)',
+                  },
+                }}
+              >
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{
+                    fontWeight: isActive ? 'bold' : 'normal',
+                  }}
+                />
+              </ListItemButton>
+            );
+          })}
+        </List>
+      </Box>
+
+      <Toolbar sx={{ justifyContent: 'center', paddingY: 2, marginBottom: 2 }}>
+        <Box display="flex" alignItems="center" gap={1}>
+          <LogoutButton />
+        </Box>
+      </Toolbar>    
+      
     </Drawer>
   );
 }

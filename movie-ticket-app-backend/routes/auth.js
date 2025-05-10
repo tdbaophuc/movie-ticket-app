@@ -65,7 +65,8 @@ router.post('/login', async (req, res) => {
       accessToken,
       refreshToken,
       username: user.username,
-      role: user.role
+      role: user.role,
+      userId: user._id,
     });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi server', error: err.message });
