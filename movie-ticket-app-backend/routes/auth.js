@@ -43,6 +43,11 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Sai mật khẩu' });
     }
 
+    const status = await user.status;
+    if (status === 'banned') {
+      return res.status(403).json({ message: 'Tài khoản của bạn đã bị thêm vào danh sách đen' });
+    }
+
     // Access Token (ngắn hạn)
     const accessToken = jwt.sign(
       { id: user._id, role: user.role },

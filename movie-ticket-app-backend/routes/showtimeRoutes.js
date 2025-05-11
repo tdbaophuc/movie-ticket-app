@@ -21,12 +21,30 @@ function generateSeats(rows = 10, cols = 15) {
 // Thêm suất chiếu
 router.post("/", authMiddleware, authorizeRoles("admin"), async (req, res) => {
   try {
-    const { movie, dateTime, room, ticketPrice, format, language, note } = req.body;
+    const { movie, dateTime, room, ticketPrice, format, language, note, duration } = req.body;
 
     // Kiểm tra phòng chiếu có tồn tại không
     const existingRoom = await Room.findById(room);
     if (!existingRoom) {
       return res.status(404).json({ message: "Phòng chiếu không tồn tại" });
+    }
+
+    // Tính thời gian bắt đầu và kết thúc của suất chiếu mới
+    const newStart = new Date(dateTime);
+    const newEnd = new Date(newStart.getTime() + duration * 60000);
+    console.log("newStart", newStart);
+    console.log("newEnd", newEnd);
+
+    // Kiểm tra suất chiếu đã tồn tại trong cùng phòng và trùng thời gian
+    const existingShowtimes = await Showtime.find({
+      room: room,
+      $or: [
+        { dateTime: { $lt: newEnd }, endDateTime: { $gt: newStart } }, // So sánh với suất chiếu đã tồn tại
+      ]
+    });
+
+    if (existingShowtimes.length > 0) {
+      return res.status(400).json({ message: "Không thể tạo suất chiếu trùng thời gian trong cùng phòng" });
     }
 
     // Tạo danh sách ghế khi tạo suất chiếu
@@ -42,6 +60,7 @@ router.post("/", authMiddleware, authorizeRoles("admin"), async (req, res) => {
       format,
       language,
       note,
+      endDateTime: newEnd, // Lưu thời gian kết thúc để so sánh
     });
 
     await newShowtime.save();

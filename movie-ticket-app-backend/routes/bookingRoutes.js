@@ -401,7 +401,7 @@ doc.end();
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"DNC Cinemas" <${process.env.EMAIL_USER}>`,
       to: booking.user.email,
       subject: `Vé xem phim DNC Cinemas - Mã vé: ${booking._id}`,
       text: `Xin chào ${booking.user.name},\n\nCảm ơn bạn đã đặt vé tại DNC Cinemas. Vé xem phim của bạn được đính kèm trong email này dưới dạng file PDF.\n\nChúc bạn xem phim vui vẻ!\n\nTrân trọng,\nDNC Cinemas`,

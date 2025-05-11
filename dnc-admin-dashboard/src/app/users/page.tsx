@@ -12,7 +12,7 @@ import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [newUser, setNewUser] = useState({ name: '', email: '', password:'', status: 'active', role: 'admin' });
+  const [newUser, setNewUser] = useState({ name: '', username:'', email: '', password:'', status: 'active', role: 'admin' });
   const currentAdminId = typeof window !== 'undefined' ? localStorage.getItem('adminId') : null;
 
 
@@ -35,7 +35,7 @@ export default function UsersPage() {
 
   const handleStatusChange = async (userId: string, newStatus: string) => {
     try {
-      await api.put(`/users/${userId}/status`, { status: newStatus });
+      await api.put(`/user/${userId}`, { status: newStatus });
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === userId ? { ...user, status: newStatus } : user
@@ -58,6 +58,7 @@ export default function UsersPage() {
 
   const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 250 },
+  { field: 'username', headerName: 'Tên đăng nhập', width: 150 },
   { field: 'name', headerName: 'Tên người dùng', width: 200 },
   { field: 'email', headerName: 'Email', width: 250 },
   {
@@ -175,11 +176,19 @@ export default function UsersPage() {
           <Typography variant="h6" sx={{ mb: 2 }}>
             Tạo tài khoản quản trị
           </Typography>
-
-          <TextField
+            <TextField
             label="Tên người dùng"
+            type="text"
             fullWidth
             value={newUser.name}
+            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+            sx={{ marginBottom: 2 }}
+          />
+
+          <TextField
+            label="Tên đăng nhập"
+            fullWidth
+            value={newUser.username}
             onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
             sx={{ marginBottom: 2 }}
           />
@@ -198,14 +207,7 @@ export default function UsersPage() {
             onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
             sx={{ marginBottom: 2 }}
           />
-          <TextField
-            label="name"
-            type="text"
-            fullWidth
-            value={newUser.name}
-            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-            sx={{ marginBottom: 2 }}
-          />
+        
 
           <Button variant="contained"
   fullWidth

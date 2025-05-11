@@ -137,6 +137,13 @@ export default function ShowtimesPage() {
       console.error('Lỗi khi lấy ghế đã đặt:', err);
     }
   };
+
+  const formatToLocalInput = (utcString: string) => {
+  const date = new Date(utcString);
+  const offsetMs = date.getTimezoneOffset() * 60000;
+  const localISOTime = new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+  return localISOTime;
+};
   
   const fetchShowtimes = async () => {
     try {
@@ -161,7 +168,8 @@ export default function ShowtimesPage() {
           id: showtime._id,
           movie: showtime.movie.title,
           movieTitle: showtime.movie.title,
-          dateTime: dateTime.toISOString().slice(0, 16), // Định dạng YYYY-MM-DDTHH:mm
+          movieDuration: showtime.movie.duration,
+          dateTime: formatToLocalInput(showtime.dateTime),
           ticketprice: showtime.ticketPrice,
           format: showtime.format,
           room: showtime.room.name,
@@ -200,16 +208,19 @@ export default function ShowtimesPage() {
       alert('Vui lòng nhập đầy đủ ngày và giờ chiếu.');
       return;
     }
-
+    // Tìm duration của phim từ danh sách phim
+  const selectedMovie = movieList.find(m => m._id === currentShowtime.movie);
+  const duration = selectedMovie?.duration || 0;
     try {
       const payload = {
         movie: currentShowtime.movie,
-        dateTime: new Date(currentShowtime.dateTime).toISOString(),
+        dateTime: currentShowtime.dateTime,
         room: currentShowtime.room,
         ticketPrice: currentShowtime.ticketprice,
         format: currentShowtime.format,
         language: currentShowtime.language,
         note: currentShowtime.note,
+        duration: duration,
       };
 
       if (currentShowtime.id) {

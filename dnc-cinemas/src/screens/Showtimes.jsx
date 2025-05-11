@@ -42,7 +42,7 @@ const Showtimes = ({ navigation }) => {
         );
         const dateArray = [...dateSet].sort((a, b) => new Date(a) - new Date(b));
         setDates(dateArray);
-  
+        
         // Ưu tiên chọn ngày hiện tại nếu có
         const today = new Date().toDateString();
         setSelectedDate(dateArray.includes(today) ? today : dateArray[0]);
@@ -93,6 +93,11 @@ const Showtimes = ({ navigation }) => {
       <View style={styles.bottomSection}>
         {/* Chọn ngày chiếu */}
         <Text style={styles.subtitle}>Chọn ngày chiếu</Text>
+        {!loading && showtimes.length === 0 && (
+         <Text style={{ color: '#ccc', textAlign: 'center', marginTop: 20 }}>
+          Hiện tại chưa có suất chiếu cho phim này
+        </Text>
+      )}
         <FlatList
           data={dates}
           keyExtractor={(item) => item}

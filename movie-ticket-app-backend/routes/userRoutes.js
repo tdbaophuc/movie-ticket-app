@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { authMiddleware } = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
+const sendMail = require('../utils/sendMail');
 
 // Route đăng ký người dùng
 router.post('/register', async (req, res) => {
@@ -82,18 +83,39 @@ router.put('/:userId', authMiddleware, async (req, res) => {
       return res.status(403).json({ message: 'Không có quyền cập nhật người dùng này' });
     }
 
-    // Kiểm tra nếu body có password, loại bỏ nó
+    // Tách password ra khỏi dữ liệu cập nhật
     const { password, ...updateData } = req.body;
 
-    // Cập nhật dữ liệu người dùng (không bao gồm password)
+    // Lấy thông tin người dùng hiện tại
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+    }
+
+    const prevStatus = currentUser.status;
+
+    // Tiến hành cập nhật
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $set: updateData },
       { new: true, runValidators: true }
     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+    // Nếu trạng thái mới là 'banned' và trước đó không phải
+    if (updateData.status === 'banned' && prevStatus !== 'banned') {
+      await sendMail({
+        to: updatedUser.email,
+        subject: 'Tài khoản của bạn đã bị khóa',
+        text: `Xin chào ${updatedUser.name},\n\nTài khoản của bạn trên hệ thống DNC Cinemas đã bị khóa do vi phạm chính sách hoặc theo quyết định của quản trị viên.\n\nNếu có thắc mắc, vui lòng liên hệ bộ phận hỗ trợ.\n\nTrân trọng,\nDNC Cinemas`,
+      });
+    }
+    // Nếu trạng thái mới là 'active' và trước đó bị banned
+    if (updateData.status === 'active' && prevStatus == 'banned') {
+      await sendMail({
+        to: updatedUser.email,
+        subject: 'Tài khoản của bạn đã được mở khóa',
+        text: `Xin chào ${updatedUser.name},\n\nTài khoản của bạn trên hệ thống DNC Cinemas đã được mở khoá sau khi khiếu nại được giải quyết, hy vọng bạn có thể tuân thủ điều khoản bảo mật cảu ứng dụng.\n\nChúc bạn có những trải nghiệm tốt hơn.\n\nTrân trọng,\nDNC Cinemas`,
+      });
     }
 
     res.json({ message: 'Cập nhật thành công', user: updatedUser });

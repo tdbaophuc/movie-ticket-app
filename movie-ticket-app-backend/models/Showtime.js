@@ -7,7 +7,8 @@ const seatSchema = new mongoose.Schema({
 
 const showtimeSchema = new mongoose.Schema({
   movie: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true },  // Tham chiếu tới bộ phim
-  dateTime: { type: Date, required: true },        // Thời gian chiếu
+  dateTime: { type: Date, required: true },  
+        // Thời gian chiếu
   room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true },  // Tham chiếu tới phòng chiếu
   seats: [seatSchema],  // Danh sách ghế
   ticketPrice: { type: Number, required: true },        //  Giá vé

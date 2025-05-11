@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import api from '@/utils/api';
+import api from '@/utils/plainApi';
 
 export default function LogoutButton() {
   const [loading, setLoading] = useState(false);
