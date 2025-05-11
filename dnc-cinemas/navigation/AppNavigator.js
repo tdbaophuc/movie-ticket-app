@@ -16,6 +16,7 @@ import PaymentScreen from '../src/screens/PaymentScreen';
 import ProfileScreen from '../src/screens/ProfileScreen';
 import EditProfile from '../src/screens/EditProfile';
 import ChangePasswordScreen from '../src/screens/ChangePasswordScreen';
+import NotificationsScreen from '../src/screens/NotificationsScreen';
 
 
 
@@ -37,6 +38,7 @@ const MainStack = () => (
     <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
     <Stack.Screen name="EditProfile" component={EditProfile} />
     <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
+    <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
     
   </Stack.Navigator>
 );

@@ -10,6 +10,7 @@ const nodemailer = require("nodemailer");
 const { createTransport } = require('nodemailer');
 const getStream = require("get-stream"); 
 const fs = require("fs");
+const Notification = require("../models/Notification"); 
 
 
 
@@ -83,8 +84,18 @@ router.post("/pay/:bookingId", authMiddleware, authorizeRoles("customer"), async
     booking.status = "paid";
     booking.createdAt = new Date();
     await booking.save();
+    
+    
 
     res.json({ message: "Thanh toán thành công. Vé đã được đặt.", booking });
+    await Notification.create({
+  userId: req.user.id,
+  title: 'Đặt vé thành công',
+  message: 'Bạn đã đặt vé thành công cho suất chiếu lúc ' + booking.showtime.dateTime.toLocaleString(),
+  icon: 'ticket-outline', 
+  type: 'success',
+});
+    
   } catch (error) {
     res.status(500).json({ message: "Lỗi thanh toán vé", error: error.message });
   }
@@ -167,7 +178,17 @@ router.delete("/:bookingId", authMiddleware, authorizeRoles("customer"), async (
     }
 
     await Booking.findByIdAndDelete(req.params.bookingId);
+
+    
+
     res.json({ message: "Đã huỷ vé thành công" });
+    await Notification.create({
+            userId: req.user.id,
+            title: 'Huỷ vé thành công',
+            message: 'Bạn đã huỷ vé thành công cho suất chiếu lúc ' + booking.showtime.dateTime.toLocaleString(),
+            icon: 'ticket-outline', 
+            type: 'success',
+          });
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi huỷ vé", error: error.message });
   }
@@ -239,12 +260,18 @@ router.put("/admin/bookings/:bookingId", authMiddleware, authorizeRoles("admin")
       booking.seats = seats;
     }
 
-    // Có thể cập nhật thêm các trường khác nếu cần, ví dụ:
-    // if (req.body.status) booking.status = req.body.status;
-
     await booking.save();
 
+    
+
     res.json({ message: "Thông tin vé đã được cập nhật", booking });
+    await Notification.create({
+            userId: req.user.id,
+            title: 'Vé đã được cập nhật',
+            message: 'Thông tin vé đã được quản trị viên cập nhật.',
+            icon: 'ticket-edit-outline', 
+            type: 'warning',
+          });
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi sửa vé", error: error.message });
   }
@@ -273,7 +300,16 @@ router.delete("/admin/bookings/:bookingId", authMiddleware, authorizeRoles("admi
     booking.status = "cancelled";
     await booking.save();
 
+    
     res.json({ message: "Đã huỷ vé thành công" });
+    await Notification.create({
+            userId: req.user.id,
+            title: 'Vé đã bị huỷ',
+            message: 'Vé đã bị huỷ bởi quản trị viên.',
+            icon: 'ticket-outline', 
+            type: 'warning',
+          });
+
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi huỷ vé", error: error.message });
   }

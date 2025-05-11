@@ -166,7 +166,7 @@ setNowShowing(sortedNowShowing);
 
           {renderMovieRow('Đang chiếu', nowShowing)}
           {renderMovieRow('Sắp chiếu', comingSoon)}
-          {renderMovieRow('Đặc biệt', topMovies)}
+          {renderMovieRow('Nổi bật', topMovies)}
         </ScrollView>
       </TouchableWithoutFeedback>
       

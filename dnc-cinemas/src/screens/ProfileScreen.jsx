@@ -79,7 +79,7 @@ export default function ProfileScreen() {
             </View>
 
             <TouchableOpacity onPress={handleEdit} style={styles.actionButton}>
-              <Text style={styles.buttonText}>Chỉnh sửa thông tin</Text>
+              <Text style={styles.buttonText}>Cập nhật thông tin</Text>
             </TouchableOpacity>
 
             <View style={styles.passwordRow}>

@@ -6,6 +6,9 @@ const User = require('../models/User');
 const { authMiddleware } = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
 const sendMail = require('../utils/sendMail');
+const Notification = require('../models/Notification');
+
+
 
 // Route đăng ký người dùng
 router.post('/register', async (req, res) => {
@@ -73,7 +76,7 @@ router.get('/customer', authMiddleware, authorize(['customer']), (req, res) => {
   res.json({ message: `Chào khách hàng ${req.user.id}` });
 });
 
-/// Route cập nhật thông tin người dùng
+// Route cập nhật thông tin người dùng
 router.put('/:userId', authMiddleware, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -101,24 +104,54 @@ router.put('/:userId', authMiddleware, async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    // Nếu trạng thái mới là 'banned' và trước đó không phải
+    // 1. Nếu bị banned
     if (updateData.status === 'banned' && prevStatus !== 'banned') {
       await sendMail({
         to: updatedUser.email,
         subject: 'Tài khoản của bạn đã bị khóa',
         text: `Xin chào ${updatedUser.name},\n\nTài khoản của bạn trên hệ thống DNC Cinemas đã bị khóa do vi phạm chính sách hoặc theo quyết định của quản trị viên.\n\nNếu có thắc mắc, vui lòng liên hệ bộ phận hỗ trợ.\n\nTrân trọng,\nDNC Cinemas`,
+        
+      });
+
+      await Notification.create({
+        userId: updatedUser._id,
+        title: 'Tài khoản bị khóa',
+        message: 'Tài khoản của bạn đã bị khóa bởi quản trị viên. Vui lòng liên hệ để biết thêm chi tiết.',
+        icon: 'lock-outline', 
+        type: 'warning',
       });
     }
-    // Nếu trạng thái mới là 'active' và trước đó bị banned
-    if (updateData.status === 'active' && prevStatus == 'banned') {
+
+    // 2. Nếu được mở khóa từ trạng thái banned
+    if (updateData.status === 'active' && prevStatus === 'banned') {
       await sendMail({
         to: updatedUser.email,
         subject: 'Tài khoản của bạn đã được mở khóa',
-        text: `Xin chào ${updatedUser.name},\n\nTài khoản của bạn trên hệ thống DNC Cinemas đã được mở khoá sau khi khiếu nại được giải quyết, hy vọng bạn có thể tuân thủ điều khoản bảo mật cảu ứng dụng.\n\nChúc bạn có những trải nghiệm tốt hơn.\n\nTrân trọng,\nDNC Cinemas`,
+        text: `Xin chào ${updatedUser.name},\n\nTài khoản của bạn trên hệ thống DNC Cinemas đã được mở khoá sau khi khiếu nại được giải quyết, hy vọng bạn có thể tuân thủ điều khoản bảo mật của ứng dụng.\n\nChúc bạn có những trải nghiệm tốt hơn.\n\nTrân trọng,\nDNC Cinemas`,
+      });
+
+      await Notification.create({
+        userId: updatedUser._id,
+        title: 'Tài khoản được mở khóa',
+        message: 'Tài khoản của bạn đã được mở khóa. Hãy tiếp tục sử dụng dịch vụ và tuân thủ điều khoản.',
+        icon: 'lock-open-outline',
+        type: 'success',
+      });
+    }
+
+    // 3. Nếu là cập nhật thông tin cá nhân (và không phải admin cập nhật người khác)
+    if (req.user.role !== 'admin' && req.user.id === userId) {
+      await Notification.create({
+        userId: updatedUser._id,
+        title: 'Cập nhật thông tin',
+        message: 'Bạn đã cập nhật thông tin tài khoản thành công.',
+        icon: 'account-edit-outline',
+        type: 'info',
       });
     }
 
     res.json({ message: 'Cập nhật thành công', user: updatedUser });
+
   } catch (error) {
     res.status(500).json({ message: 'Lỗi cập nhật người dùng', error: error.message });
   }
@@ -148,6 +181,14 @@ router.put("/change-password/:userId", authMiddleware, async (req, res) => {
     // Hash mật khẩu mới
     user.password = newPassword; // middleware hash
     await user.save();
+
+    await Notification.create({
+        userId: updatedUser._id,
+        title: 'Cập nhật mật khẩu',
+        message: 'Bạn đã cập nhật mật khẩu mới thành công.',
+        icon: 'password-edit-outline',
+        type: 'info',
+      });
 
 
     res.status(200).json({ message: "Đổi mật khẩu thành công" });

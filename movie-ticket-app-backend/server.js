@@ -9,6 +9,8 @@ const movieRoutes = require('./routes/movieRoutes');
 const showtimeRoutes = require('./routes/showtimeRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const roomRoutes = require('./routes/roomRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+
 
 const app = express();
 app.use(cors());
@@ -21,6 +23,8 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/showtimes', showtimeRoutes);
+app.use('/api/notifications', notificationRoutes);
+
 
 // MongoDB
 mongoose

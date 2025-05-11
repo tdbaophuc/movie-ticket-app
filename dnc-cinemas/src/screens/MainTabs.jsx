@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import HomeStack from './HomeStack';
 import MyTicketsScreen from './MyTicketsScreen';
 import ProfileStack from './ProfileStack';
+import NotificationsScreen from './NotificationsScreen'; 
 
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get('window');
@@ -39,6 +40,7 @@ export default function MainTabs() {
 
       if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
       else if (route.name === 'MyTicketsScreen') iconName = focused ? 'ticket' : 'ticket-outline';
+      else if (route.name === 'NotificationsScreen') iconName = focused ? 'notifications' : 'notifications-outline';
       else if (route.name === 'ProfileStack') iconName = focused ? 'person' : 'person-outline';
 
       return (
@@ -65,6 +67,7 @@ export default function MainTabs() {
 
         <Tab.Screen name="Home" component={HomeStack} />
         <Tab.Screen name="MyTicketsScreen" component={MyTicketsScreen} />
+        <Tab.Screen name="NotificationsScreen" component={NotificationsScreen} />
         <Tab.Screen name="ProfileStack" component={ProfileStack} />
       </Tab.Navigator>
     </MenuProvider>
