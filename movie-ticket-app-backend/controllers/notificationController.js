@@ -1,5 +1,6 @@
 const Notification = require('../models/Notification');
 
+
 // Lấy danh sách thông báo của người dùng hiện tại
 const getNotifications = async (req, res) => {
   try {
@@ -42,5 +43,7 @@ const createNotification = async (req, res) => {
     res.status(500).json({ message: 'Lỗi máy chủ khi tạo thông báo' });
   }
 };
+
+
 
 module.exports = { getNotifications, markAsRead, createNotification };

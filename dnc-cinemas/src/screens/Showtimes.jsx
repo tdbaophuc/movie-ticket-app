@@ -126,7 +126,10 @@ const Showtimes = ({ navigation }) => {
                     isPastDate && { color: '#999' }
                   ]}
                 >
-                  {item.split(' ').slice(0, 2).join(' ')}
+                  {new Date(item).toLocaleDateString('vi-VN', {
+                  day: 'numeric',   
+                  month: 'short',   
+                  })}
                 </Text>
               </TouchableOpacity>
             );

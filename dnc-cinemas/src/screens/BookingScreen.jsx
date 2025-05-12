@@ -1,5 +1,5 @@
 // BookingScreen.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   ScrollView,
   Image
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../utils/api';
 
@@ -21,9 +22,19 @@ const BookingScreen = ({ route, navigation }) => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchSeats();
-  }, []);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchSeats(); // gọi khi màn hình được focus
+  
+      const interval = setInterval(() => {
+        fetchSeats();
+      }, 1000);
+  
+      return () => clearInterval(interval); // clear khi mất focus
+    }, [])
+  );
 
   const fetchSeats = async () => {
     try {

@@ -1,7 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cron = require('node-cron');
 require("dotenv").config();
+
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/userRoutes');
@@ -10,6 +12,7 @@ const showtimeRoutes = require('./routes/showtimeRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const sendReminderNotifications = require("./controllers/scheduleNotification");
 
 
 const app = express();
@@ -25,7 +28,7 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/showtimes', showtimeRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-
+cron.schedule('* * * * *', sendReminderNotifications);
 // MongoDB
 mongoose
   .connect(process.env.MONGO_URI)

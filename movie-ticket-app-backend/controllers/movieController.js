@@ -1,12 +1,24 @@
 const Movie = require("../models/Movie");
 const Booking = require("../models/Booking");
+const User = require("../models/User")
+const Notification = require('../models/Notification');
 
 // Thêm phim mới
 const createMovie = async (req, res) => {
   try {
+
     const newMovie = new Movie(req.body);
     await newMovie.save();
     res.status(201).json(newMovie);
+    const users = await User.find({}, '_id'); // Lấy danh sách userId
+    const notifications = users.map(user => ({
+      userId: user._id,
+      title: 'Một phim mới sắp được chiếu',
+      message: `Phim "${newMovie.title}" sắp được công chiếu, hãy nhanh tay đặt vé nào!`,
+      icon: 'movie-outline',
+      type: 'info',
+    }));
+    await Notification.insertMany(notifications);
   } catch (err) {
     res.status(500).json({ message: "Lỗi tạo phim", error: err.message });
   }

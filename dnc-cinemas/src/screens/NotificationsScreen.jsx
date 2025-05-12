@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react'; 
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react'; 
+import { useFocusEffect } from '@react-navigation/native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, } from 'react-native';
 import api from '../utils/api';
 import * as Animatable from 'react-native-animatable';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -34,9 +35,17 @@ const NotificationsScreen = () => {
     }
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
+  useFocusEffect(
+  useCallback(() => {
+    fetchNotifications(); // gọi khi màn hình được focus
+
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 1000);
+
+    return () => clearInterval(interval); // clear khi mất focus
+  }, [])
+);
 
   const renderItem = ({ item, index }) => (
     <Animatable.View

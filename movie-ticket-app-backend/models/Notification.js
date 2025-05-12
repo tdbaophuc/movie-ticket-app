@@ -9,6 +9,7 @@ const notificationSchema = new mongoose.Schema({
   type: { type: String, enum: ['info', 'warning', 'success'], default: 'info' },
   isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
+  referenceId: { type: mongoose.Schema.Types.ObjectId, default: null }
 });
 
 module.exports = mongoose.model('Notification', notificationSchema);
