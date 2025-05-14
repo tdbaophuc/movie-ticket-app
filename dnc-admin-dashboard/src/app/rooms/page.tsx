@@ -131,7 +131,7 @@ export default function RoomsPage() {
   sx={{ mb: 2, borderRadius: 2, textTransform: 'none', boxShadow: 2 }} onClick={handleOpenAdd}>
         Thêm phòng
       </Button>
-      <Box sx={{ height: 600 }}>
+      <Box sx={{ height: 600, width: '99.5%',}}>
         <DataGrid rows={rooms} columns={columns} pageSize={7} sx={{
       bgcolor: '#fff',
       borderRadius: 3,

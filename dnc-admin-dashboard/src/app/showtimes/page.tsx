@@ -261,7 +261,7 @@ export default function ShowtimesPage() {
       setCurrentShowtime({});
       setOpen(true);
       }}> Thêm suất chiếu</Button>
-    <Box sx={{ height: 590, width: '100%' }}>
+    <Box sx={{ height: 590, width: '99.5%' }}>
       <DataGrid
         rows={showtimes}
         columns={columns}
@@ -309,7 +309,7 @@ export default function ShowtimesPage() {
     transform: 'translate(-50%, -50%)',
     borderRadius: 3,
     boxShadow: 24, }}>
-          <Typography variant="h6">Sửa suất chiếu</Typography>
+          <Typography variant="h6">Cập nhật suất chiếu</Typography>
           <Box sx={{ mb: 2 }}>
   <Typography variant="body1" sx={{ mb: 1 }}>Phim đã chọn:</Typography>
   <Typography variant="subtitle1" color="primary" sx={{ mb: 1 }}>

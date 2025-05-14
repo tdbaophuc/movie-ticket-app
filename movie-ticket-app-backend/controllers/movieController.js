@@ -25,7 +25,6 @@ const createMovie = async (req, res) => {
 };
 
 // Lấy danh sách phim
-
 const getAllMovies = async (req, res) => {
   try {
     const movies = await Movie.find().lean();

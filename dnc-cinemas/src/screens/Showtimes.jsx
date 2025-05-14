@@ -21,7 +21,7 @@ const { width } = Dimensions.get('window');
 
 const Showtimes = ({ navigation }) => {
   const route = useRoute();
-  const { movieId, movieTitle, moviePoster, movieDescription } = route.params;
+  const { movieId, movieTitle, moviePoster, movieDescription, movieDirector, movieActors } = route.params;
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -83,11 +83,17 @@ const Showtimes = ({ navigation }) => {
           <Text style={styles.title}>{movieTitle}</Text>
         </SharedElement>
 
-        {/* Nội dung phim cuộn được */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.subtitle}>Thông tin phim</Text>
-        <Text style={styles.infoText}>{movieDescription}</Text>
-      </ScrollView>
+   
+<View style={styles.credits}>
+  <Text style={styles.creditsText}>Đạo diễn: {movieDirector}</Text>
+  <Text style={styles.creditsText}>Diễn viên: {movieActors}</Text>
+</View>
+
+{/* Nội dung phim cuộn được */}
+<ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+  <Text style={styles.subtitle}>Nội dung</Text>
+  <Text style={styles.infoText}>{movieDescription}</Text>
+</ScrollView>
 
       {/* View cố định ở dưới cùng: chọn ngày & giờ */}
       <View style={styles.bottomSection}>
@@ -279,6 +285,18 @@ const styles = StyleSheet.create({
   bottomSection: {
     paddingBottom: width*0.25,
   },
+  credits: {
+  marginTop: 10,
+  alignItems: 'center',
+},
+creditsText: {
+  color: '#bbb',
+  fontSize: 12,
+  fontStyle: 'italic',
+  textAlign: 'center',
+  marginBottom: 2,
+},
+
 });
 
 export default Showtimes;

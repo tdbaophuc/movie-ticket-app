@@ -108,6 +108,8 @@ setNowShowing(sortedNowShowing);
                 movieTitle: movie.title,
                 moviePoster: movie.poster,
                 movieDescription: movie.description,
+                movieDirector: movie.director,
+                movieActors: movie.actors,
               })}
             style={styles.movieItem}
             activeOpacity={0.7}

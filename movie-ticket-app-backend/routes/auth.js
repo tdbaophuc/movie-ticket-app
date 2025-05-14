@@ -16,7 +16,7 @@ router.post('/register', async (req, res) => {
     }
 
     // Nếu không có role, gán mặc định là 'user'
-    const userRole = role || 'user';
+    const userRole = role || 'customer';
 
     // Tạo tài khoản mới
     const newUser = new User({ username, password, name, email, role: userRole });

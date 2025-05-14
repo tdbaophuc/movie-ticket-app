@@ -17,11 +17,11 @@ import LogoutButton from '@/components/LogoutButton';
 const drawerWidth = 240;
 
 const menuItems = [
-  { label: 'Phim', href: '/movies' },
-  { label: 'Suất chiếu', href: '/showtimes' },
-  { label: 'Phòng chiếu', href: '/rooms' },
-  { label: 'Vé', href: '/bookings' },
-  { label: 'Người dùng', href: '/users' },
+  { label: 'Quản lý Phim', href: '/movies' },
+  { label: 'Quản lý Suất chiếu', href: '/showtimes' },
+  { label: 'Quản lý Phòng chiếu', href: '/rooms' },
+  { label: 'Quản lý Vé đặt', href: '/bookings' },
+  { label: 'Quản lý Người dùng', href: '/users' },
   { label: 'Thống kê', href: '/statistics' },
 ];
 
@@ -47,7 +47,7 @@ export default function Sidebar() {
     >
       <Toolbar sx={{ justifyContent: 'center', paddingY: 2 }}>
         <Box display="flex" alignItems="center" gap={1}>
-          <Image src="/icon-logo-DNC.png" alt="Logo" width={49} height={49}/>
+          <Image src="/icon-logo-DNC.png" alt="Logo" width={64} height={64}/>
           <Typography variant="h6" fontWeight="bold" noWrap>
             DNC Admin
           </Typography>

@@ -18,6 +18,8 @@ interface Movie {
   duration: number;
   poster: string;
   description: string;
+  director: string[];
+  actors: string[];
   showtimes: string[]; 
 
 }
@@ -44,6 +46,8 @@ export default function MoviesPage() {
         duration: movie.duration,
         poster: movie.poster,
         description: movie.description,
+        director: movie.director,
+        actors: movie.actors,
         showtimes: movie.showtimes, 
         
       }));
@@ -71,7 +75,7 @@ export default function MoviesPage() {
   };
 
   const handleOpenAdd = () => {
-    setCurrentMovie({ title: '', genre: '', description:'', shpowtimes:[], duration: 0, poster: '' });
+    setCurrentMovie({ title: '', genre: '', description:'', director:[], actors:[],  showtimes:[], duration: 0, poster: '' });
     setIsEdit(false);
     setOpen(true);
   };
@@ -93,11 +97,13 @@ export default function MoviesPage() {
   const handleClose = () => setOpen(false);
 
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 100 },
-    { field: 'title', headerName: 'Tên phim', width: 200 },
+    { field: 'id', headerName: 'ID', width: 50 },
+    { field: 'title', headerName: 'Tên phim', width: 150 },
     { field: 'genre', headerName: 'Thể loại', width: 100 },
-    { field: 'description', headerName: 'Mô tả', width: 300 },
-    { field: 'duration', headerName: 'Thời gian (phút)', width: 150 },
+    { field: 'director', headerName: 'Đạo diễn', width: 90, renderCell: (params) => (params.row.director ?? []).join(', ') },
+    { field: 'actors', headerName: 'Diễn viên', width: 200, renderCell: (params) => (params.row.actors ?? []).join(', ') },
+    { field: 'description', headerName: 'Mô tả', width: 200 },
+    { field: 'duration', headerName: 'Thời gian (phút)', width: 100 },
     {
       field: 'showtimes',
       headerName: 'Lịch chiếu',
@@ -117,7 +123,7 @@ export default function MoviesPage() {
     {
       field: 'poster',
       headerName: 'Poster',
-      width: 150,
+      width: 120,
       
       renderCell: (params) => (
         <img src={params.value} alt="Poster" style={{ width: 100, height: 150, objectFit: 'cover' }} />
@@ -228,7 +234,7 @@ export default function MoviesPage() {
     boxShadow: 24,
   }}>
 
-          <Typography variant="h6" sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
             {isEdit ? 'Sửa phim' : 'Thêm phim'}
           </Typography>
           <TextField
@@ -243,6 +249,20 @@ export default function MoviesPage() {
             fullWidth
             value={currentMovie.genre || ''}
             onChange={(e) => setCurrentMovie({ ...currentMovie, genre: e.target.value })}
+            sx={{ marginBottom: 2 }}
+          />
+          <TextField
+            label="Đạo diễn"
+            fullWidth
+            value={currentMovie.director || ''}
+            onChange={(e) => setCurrentMovie({ ...currentMovie, director: e.target.value.split(',').map((actor) => actor.trim()) })}
+            sx={{ marginBottom: 2 }}
+          />
+          <TextField
+            label="Diễn viên"
+            fullWidth
+            value={(currentMovie.actors || []).join(', ')}
+            onChange={(e) => setCurrentMovie({ ...currentMovie, actors: e.target.value.split(',').map((actor) => actor.trim()) })}
             sx={{ marginBottom: 2 }}
           />
           <TextField

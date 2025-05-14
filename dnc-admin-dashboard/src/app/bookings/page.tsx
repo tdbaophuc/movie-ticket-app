@@ -109,7 +109,7 @@ const BookingsPage = () => {
   ];
 
   return (
-    <Box sx={{ height: 700, width: '100%' }}>
+    <Box sx={{ height: 700, width: '100%', padding: 2 }}>
       <Typography variant="h5" sx={{ mb: 2 }}>Quản lý vé</Typography>
       <DataGrid  rows={bookings} columns={columns} pageSize={5} sx={{
       bgcolor: '#fff',
