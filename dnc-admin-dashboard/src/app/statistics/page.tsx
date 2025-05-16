@@ -156,8 +156,8 @@ const showtimeBarData = {
 const showtimeBarOptions = {
   plugins: {
     legend: {
-      display: true, // Hiển thị chú thích
-      position: "bottom", // Có thể là 'top', 'bottom', 'left', 'right'
+      display: false, 
+      position: "bottom", 
       labels: {
         generateLabels: function (chart) {
           return movieTitles.map((title, index) => ({
@@ -186,7 +186,7 @@ function getRandomColor(opacity = 1) {
 const ticketsByMovie = {}; 
 
 paidBookings.forEach((booking) => {
-  const movieName = booking.showtime.movie.title; // Giả sử bạn có movie.title trong showtime
+  const movieName = booking.showtime.movie.title; 
 
   if (!ticketsByMovie[movieName]) ticketsByMovie[movieName] = 0;
 
@@ -321,7 +321,7 @@ const revenueBarData = {
         padding: 20
         
       }}>
-        <h3 style={{ marginBottom: 12 }}>Tỷ lệ ghế được đặt</h3>
+        <h3 style={{ marginBottom: 12 }}>Tỷ lệ lấp đầy ghế</h3>
         <Line data={seatRateLineData} options={seatRateLineOptions} />
       </div>
 

@@ -34,18 +34,27 @@ const Showtimes = ({ navigation }) => {
         const data = res.data;
         setShowtimes(data);
   
-        // Lấy toàn bộ ngày chiếu, cả quá khứ và tương lai
-        const dateSet = new Set(
-          data.map((item) =>
-            new Date(item.dateTime).toDateString()
-          )
-        );
-        const dateArray = [...dateSet].sort((a, b) => new Date(a) - new Date(b));
-        setDates(dateArray);
-        
-        // Ưu tiên chọn ngày hiện tại nếu có
-        const today = new Date().toDateString();
-        setSelectedDate(dateArray.includes(today) ? today : dateArray[0]);
+        const now = new Date();
+
+const upcomingShowtimes = data
+  .filter((item) => new Date(item.dateTime) >= now)
+  .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+
+setShowtimes(upcomingShowtimes);
+
+// Tạo danh sách ngày hợp lệ từ các suất chiếu tương lai
+const dateSet = new Set(
+  upcomingShowtimes.map((item) =>
+    new Date(item.dateTime).toDateString()
+  )
+);
+const dateArray = [...dateSet].sort((a, b) => new Date(a) - new Date(b));
+setDates(dateArray);
+
+// Ưu tiên chọn hôm nay nếu có
+const today = new Date().toDateString();
+setSelectedDate(dateArray.includes(today) ? today : dateArray[0]);
+
   
       } catch (err) {
         console.error('Lỗi khi tải suất chiếu:', err.message);

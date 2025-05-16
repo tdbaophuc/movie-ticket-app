@@ -1,6 +1,6 @@
 // utils/plainApi.ts
 import axios from 'axios';
-import { API_BASE_URL } from './api'; // dùng lại baseURL nếu có
+import { API_BASE_URL } from './api'; 
 
 const plainApi = axios.create({
   baseURL: API_BASE_URL,
