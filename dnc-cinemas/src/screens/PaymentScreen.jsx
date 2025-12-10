@@ -1,30 +1,29 @@
-import { useNavigation, useRoute } from '@react-navigation/native'; 
-import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, ScrollView } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useState, useEffect, useRef } from 'react';
+import * as Linking from 'expo-linking';
 import api from '../utils/api';
-import { useAuth } from '../../contexts/AuthContext'; 
+import { useAuth } from '../../contexts/AuthContext';
 
 const PaymentScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { selectedSeats, showtimeId } = route.params || {}; 
+  
+  const { selectedSeats, showtimeId, totalPrice: paramPrice } = route.params || {};
 
   const { authToken, refreshAccessToken } = useAuth();
 
   const [bookingId, setBookingId] = useState(null);
-  const [paying, setPaying] = useState(false);
-  const [countdown, setCountdown] = useState(300); 
 
-  // Các trường nhập giả lập
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardHolder, setCardHolder] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
+
+  const [totalPrice, setTotalPrice] = useState(paramPrice || 0); 
+
+  const [paying, setPaying] = useState(false);
+  const [countdown, setCountdown] = useState(300);
 
   const timerRef = useRef(null);
 
-  // Hàm hold vé khi vào trang
   useEffect(() => {
     const holdBooking = async () => {
       try {
@@ -46,7 +45,9 @@ const PaymentScreen = () => {
           }
         });
 
-        setBookingId(res.data.booking._id); 
+        setBookingId(res.data.booking._id);
+        setTotalPrice(res.data.booking.totalPrice || 0); 
+
       } catch (error) {
         console.error('Lỗi hold vé:', error.response?.data || error.message);
         Alert.alert('Lỗi', error.response?.data?.message || 'Không thể giữ vé.');
@@ -57,7 +58,33 @@ const PaymentScreen = () => {
     holdBooking();
   }, []);
 
-  // Đếm ngược thời gian
+  // 2. Lắng nghe sự kiện khi MoMo trả về App
+  useEffect(() => {
+    const handleDeepLink = (event) => {
+      console.log("Deep link url:", event.url);
+      let data = Linking.parse(event.url);
+      
+      if (data.path === 'momo-result' || event.url.includes('momo-result')) {
+        
+        const params = data.queryParams || {};
+        
+        const code = params.resultCode || params.errorCode; 
+        const message = params.message;
+        
+        if (code == '0' || code === 0) {
+            handlePaymentSuccess();
+        } else {
+            Alert.alert("Thất bại", "Giao dịch lỗi: " + (message || "Không rõ nguyên nhân"));
+        }
+        // --------------------
+      }
+    };
+
+    // Đăng ký sự kiện
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    return () => subscription.remove();
+  }, [bookingId]);
+
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
@@ -71,7 +98,7 @@ const PaymentScreen = () => {
     }, 1000);
 
     return () => clearInterval(timerRef.current);
-  }, []);
+  }, [bookingId]);
 
   // Hàm tự động huỷ vé
   const handleCancelBooking = async () => {
@@ -94,60 +121,73 @@ const PaymentScreen = () => {
     }
   };
 
-  // Huỷ vé nếu người dùng bấm nút quay lại
   const handleGoBack = () => {
     handleCancelBooking();
   };
 
-  const handlePayment = async () => {
-    // Validate thông tin trước
-    if (!cardNumber.trim() || !cardHolder.trim() || !expiryDate.trim() || !cvv.trim()) {
-      Alert.alert('Thiếu thông tin', 'Vui lòng điền đầy đủ thông tin thanh toán.');
-      return;
-    }
-  
+  const handlePaymentSuccess = async () => {
     try {
       setPaying(true);
-  
+      let token = authToken;
+      if (!token) token = await refreshAccessToken();
+
+      await api.post(`/bookings/pay/${bookingId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      await api.get(`/bookings/successful/${bookingId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      clearInterval(timerRef.current);
+      Alert.alert('Thành công', 'Thanh toán hoàn tất! Vé đã được gửi về email.');
+      navigation.navigate('MyTicketsScreen');
+    } catch (error) {
+      console.error('Lỗi xác nhận vé:', error.response?.data || error.message);
+      Alert.alert('Lỗi', error.response?.data?.message || 'Thanh toán thành công nhưng chưa lấy được vé. Vui lòng liên hệ hỗ trợ.');
+    } finally {
+      setPaying(false);
+    }
+  }
+
+  const handleMomoPayment = async () => {
+    try {
+      setPaying(true);
+
       if (!bookingId) {
-        Alert.alert('Lỗi', 'Không tìm thấy thông tin vé để thanh toán.');
+        Alert.alert('Lỗi', 'Chưa có thông tin vé.');
         return;
       }
-  
-      let token = authToken;
-      if (!token) {
-        token = await refreshAccessToken();
-      }
-  
-      const res = await api.post(`/bookings/pay/${bookingId}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+
+      const redirectUrl = Linking.createURL('momo-result'); 
+      console.log('Redirect URL gửi đi:', redirectUrl);
+
+      const res = await api.post('/payment/momo', { 
+        totalAmount: paramPrice,
+        bookingId: bookingId,
+        redirectUrl: redirectUrl
       });
-  
-      clearInterval(timerRef.current); // dừng đếm ngược sau khi thanh toán
-  
-      Alert.alert('Thành công', 'Thanh toán thành công!');
 
-    // Gửi vé về email sau khi thanh toán thành công
-    await api.get(`/bookings/successful/${bookingId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      const { deeplink } = res.data;
 
-    Alert.alert('Thông báo', 'Vé đã được gửi về email của bạn.');
-      // navigation.navigate('MyTicketScreen');
-      navigation.navigate('MyTicketsScreen');
-  
+      if (deeplink) {
+        try {
+            await Linking.openURL(deeplink);
+        } catch (err) {
+            console.error("Lỗi mở Deep Link:", err);
+            Alert.alert("Lỗi", "Không thể mở ứng dụng MoMo. Hãy chắc chắn bạn đã cài App MoMo Developer.");
+        }
+      } else {
+        Alert.alert("Lỗi", "Không lấy được link thanh toán.");
+      }
+
     } catch (error) {
       console.error('Thanh toán lỗi:', error.response?.data || error.message);
-      Alert.alert('Lỗi', error.response?.data?.message || 'Thanh toán thất bại.');
+      Alert.alert('Lỗi', 'Không thể khởi tạo thanh toán MoMo.');
     } finally {
       setPaying(false);
     }
   };
-  
 
   const formatCountdown = (seconds) => {
     const min = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -165,54 +205,29 @@ const PaymentScreen = () => {
         <Text style={styles.title}>Thanh toán vé</Text>
 
         {/* Đếm ngược */}
-        <Text style={styles.countdown}>Hãy thanh toán trong: {formatCountdown(countdown)}</Text>
+        <Text style={styles.countdown}>Thời gian giữ vé: {formatCountdown(countdown)}</Text>
 
-        {/* Các ô nhập thông tin thanh toán giả */}
-        <TextInput
-          style={styles.input}
-          placeholder="Số thẻ"
-          placeholderTextColor="#ccc"
-          value={cardNumber}
-          onChangeText={setCardNumber}
-          keyboardType="numeric"
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Tên chủ thẻ"
-          placeholderTextColor="#ccc"
-          value={cardHolder}
-          onChangeText={setCardHolder}
-        />
-
-        <View style={styles.row}>
-          <TextInput
-            style={[styles.input, { flex: 1, marginRight: 10 }]}
-            placeholder="Ngày hết hạn (MM/YY)"
-            placeholderTextColor="#ccc"
-            value={expiryDate}
-            onChangeText={setExpiryDate}
-          />
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="CVV"
-            placeholderTextColor="#ccc"
-            value={cvv}
-            onChangeText={setCvv}
-            keyboardType="numeric"
-            secureTextEntry
-          />
+        {/* Hiển thị thông tin tổng tiền */}
+        <View style={styles.infoContainer}>
+            <Text style={styles.label}>Tổng tiền cần thanh toán:</Text>
+            <Text style={styles.price}>{paramPrice.toLocaleString()} VND</Text>
         </View>
 
+        {/* Nút thanh toán MoMo */}
         <TouchableOpacity
-          style={styles.payButton}
-          onPress={handlePayment}
+          style={styles.momoButton}
+          onPress={handleMomoPayment}
           disabled={paying}
         >
-          <Text style={styles.payButtonText}>
-            {paying ? 'Đang thanh toán...' : 'Thanh toán ngay'}
-          </Text>
+            {/* Nếu bạn có ảnh logo MoMo thì bỏ vào đây, không thì dùng Text */}
+            <Text style={styles.momoButtonText}>
+                {paying ? 'Đang xử lý...' : 'THANH TOÁN BẰNG VÍ MOMO'}
+            </Text>
         </TouchableOpacity>
+
+        <Text style={styles.noteText}>
+            Bạn sẽ được chuyển sang ứng dụng MoMo để xác nhận thanh toán.
+        </Text>
 
       </ScrollView>
     </View>
@@ -221,22 +236,45 @@ const PaymentScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-  backButton: { position: 'absolute', top: 40, left: 20, zIndex: 10 },
+  backButton: { position: 'absolute', top: 50, left: 20, zIndex: 10 },
   scrollContent: { paddingTop: 100, paddingHorizontal: 20, alignItems: 'center' },
   title: { fontSize: 24, marginBottom: 10, color: '#fff', fontWeight: 'bold' },
-  countdown: { fontSize: 18, color: '#f39c12', marginBottom: 20 },
-  input: { 
-    backgroundColor: '#222', 
-    width: '100%', 
-    padding: 15, 
-    borderRadius: 10, 
-    color: '#fff', 
-    marginBottom: 15,
-    fontSize: 16,
+  countdown: { fontSize: 18, color: '#f39c12', marginBottom: 40 },
+  
+  infoContainer: {
+    backgroundColor: '#222',
+    padding: 20,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: '#333'
   },
-  row: { flexDirection: 'row', width: '100%' },
-  payButton: { backgroundColor: '#B6116B', padding: 15, borderRadius: 10, marginTop: 20, width: '100%', alignItems: 'center' },
-  payButtonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  label: { color: '#ccc', fontSize: 16, marginBottom: 10 },
+  price: { color: '#fff', fontSize: 28, fontWeight: 'bold' },
+
+  momoButton: { 
+    backgroundColor: '#A50064', // Màu đặc trưng của MoMo
+    paddingVertical: 18, 
+    borderRadius: 12, 
+    width: '100%', 
+    alignItems: 'center',
+    shadowColor: "#A50064",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6
+  },
+  momoButtonText: { color: 'white', fontSize: 18, fontWeight: 'bold', textTransform: 'uppercase' },
+  
+  noteText: {
+      color: '#666',
+      textAlign: 'center',
+      marginTop: 20,
+      fontSize: 14,
+      paddingHorizontal: 20
+  }
 });
 
 export default PaymentScreen;

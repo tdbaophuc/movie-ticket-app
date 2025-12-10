@@ -13,6 +13,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const sendReminderNotifications = require("./controllers/scheduleNotification");
+const paymentRoutes = require('./routes/paymentRoutes');
 
 
 const app = express();
@@ -26,6 +27,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/showtimes', showtimeRoutes);
+app.use('/api/payment', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 cron.schedule('* * * * *', sendReminderNotifications);

@@ -1,4 +1,3 @@
-// BookingScreen.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -73,6 +72,9 @@ const BookingScreen = ({ route, navigation }) => {
       return;
     }
 
+    // Tính tổng tiền
+    const currentTotalPrice = selectedSeats.length * ticketPrice;
+
     navigation.navigate('PaymentScreen', {
       showtimeId,
       movieTitle,
@@ -80,6 +82,7 @@ const BookingScreen = ({ route, navigation }) => {
       dateTime,
       ticketPrice,
       selectedSeats,
+      totalPrice,
     });
   };
 
@@ -160,10 +163,10 @@ const BookingScreen = ({ route, navigation }) => {
 
             {/* Thông tin đặt vé phía dưới */}
             <View style={styles.bottomInfo}>
-              <Text style={styles.infoText}>🕒 {new Date(dateTime).toLocaleString()}</Text>
-              <Text style={styles.infoText}>🏢 Phòng 1 - Số Ghế: {selectedSeats.length}</Text>
+              <Text style={styles.infoText}>{new Date(dateTime).toLocaleString()}</Text>
+              <Text style={styles.infoText}>Phòng 1 - Số Ghế: {selectedSeats.length}</Text>
               <Text style={styles.infoText}>
-                💰 Tạm tính: {totalPrice.toLocaleString()}₫
+              Tạm tính: {totalPrice.toLocaleString()}₫
               </Text>
               <TouchableOpacity
                 style={styles.bookButton}
