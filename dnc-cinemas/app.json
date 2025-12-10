@@ -3,6 +3,7 @@
     "name": "DNC Cinemas",
     "slug": "dnc-cinemas",
     "version": "1.0.0",
+    "scheme": "dnccinemas",
     "orientation": "portrait",
     "icon": "./assets/dnc-icon.png",
     "userInterfaceStyle": "light",
@@ -24,10 +25,11 @@
     "web": {
       "favicon": "./assets/dnc-favicon.png"
     },
-    "sdkVersion": "53.0.0",
+    "sdkVersion": "54.0.0",
     "plugins": [
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-asset"
     ]
   }
 }

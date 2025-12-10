@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getRefreshToken, removeRefreshToken } from '../utils/authStorage';
 
-export const API_BASE_URL = 'http://192.168.1.241:5000/api'; 
+export const API_BASE_URL = 'http://192.168.1.85:5000/api'; 
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 
