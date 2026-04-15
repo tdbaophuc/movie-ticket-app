@@ -1,18 +1,19 @@
 import axios from 'axios';
 import { refreshAccessToken } from './refreshToken';
 
-export const API_BASE_URL = 'http://192.168.1.62:5000/api';
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api',
   timeout: 5000,
 });
 
-// Gắn token vào header
+// Gắn token từ HTTP-only cookie vào header (cookie set bởi login flow)
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (typeof document !== 'undefined') {
+    const match = document.cookie.match(/(?:^|;\s*)accessToken=([^;]*)/);
+    const token = match ? match[1] : null;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
@@ -33,7 +34,7 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 api.interceptors.response.use(
-   (response) => response,
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
@@ -58,18 +59,18 @@ api.interceptors.response.use(
         const newToken = await refreshAccessToken();
 
         if (!newToken) {
-          window.location.href = '/login';
+          if (typeof window !== 'undefined') window.location.href = '/login';
           return Promise.reject(error);
         }
 
-        localStorage.setItem('accessToken', newToken);
+        // Update cookie and queue
+        document.cookie = `accessToken=${newToken}; path=/; max-age=900`;
         processQueue(null, newToken);
-
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
       } catch (err) {
         processQueue(err, null);
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') window.location.href = '/login';
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

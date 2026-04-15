@@ -34,15 +34,13 @@ export default function LoginPage() {
         return;
       }
   
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);  // Lưu refresh token
-      localStorage.setItem('role', role);
       localStorage.setItem('username', username);
       localStorage.setItem('adminId', userId);
-  
+
       router.push('/movies');
-      document.cookie = `accessToken=${accessToken}; path=/; max-age=3600`;
-      document.cookie = `refreshToken=${refreshToken}; path=/; max-age=3600`;
+      // HTTP-only cookie set bởi server (middleware/trusted channel)
+      document.cookie = `accessToken=${accessToken}; path=/; max-age=900; SameSite=Strict`;
+      document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Strict`;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Đăng nhập thất bại');
     }

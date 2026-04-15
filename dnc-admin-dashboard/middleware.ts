@@ -2,8 +2,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Những route cần bảo vệ
-const protectedRoutes = ['/movies', '/dashboard', '/users']; // Thêm route khác nếu cần
+// All admin dashboard routes require authentication
+const protectedRoutes = [
+  '/movies',
+  '/showtimes',
+  '/rooms',
+  '/bookings',
+  '/users',
+  '/statistics',
+];
 
 export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('accessToken')?.value;
@@ -22,5 +29,12 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/movies', '/dashboard', '/users'], 
+  matcher: [
+    '/movies/:path*',
+    '/showtimes/:path*',
+    '/rooms/:path*',
+    '/bookings/:path*',
+    '/users/:path*',
+    '/statistics/:path*',
+  ],
 };

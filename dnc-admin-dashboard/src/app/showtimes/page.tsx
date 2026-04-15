@@ -24,8 +24,6 @@ interface Showtime {
 
 
 
-let handleEdit = () => {}; 
-
 export default function ShowtimesPage() {
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [open, setOpen] = useState(false);

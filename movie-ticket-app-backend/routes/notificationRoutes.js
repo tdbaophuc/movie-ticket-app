@@ -1,21 +1,21 @@
+/**
+ * Notification routes — thin wrappers calling NotificationController.
+ */
 const express = require('express');
-const {
-  getNotifications,
-  markAsRead,
-  createNotification
-} = require('../controllers/notificationController');
-
-const { authMiddleware } = require("../middleware/auth");
-
 const router = express.Router();
+const NotificationController = require('../controllers/NotificationController');
+const { authMiddleware } = require('../middleware/auth');
 
-// Tạo thông báo mới
-router.post('/', authMiddleware, createNotification);
+// GET /api/notifications
+router.get('/', authMiddleware, NotificationController.getAll);
 
-// Lấy danh sách thông báo
-router.get('/', authMiddleware, getNotifications);
+// POST /api/notifications
+router.post('/', authMiddleware, NotificationController.create);
 
-// Đánh dấu là đã đọc
-router.put('/:id/read', authMiddleware, markAsRead);
+// PUT /api/notifications/:id/read
+router.put('/:id/read', authMiddleware, NotificationController.markAsRead);
+
+// PUT /api/notifications/read-all
+router.put('/read-all', authMiddleware, NotificationController.markAllAsRead);
 
 module.exports = router;

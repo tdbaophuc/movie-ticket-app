@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir *)",
+      "Read(//c/Users/Acer/AppData/Local/Temp/claude/**)",
+      "Read(//mnt/**)",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:5000/api/movies)",
+      "Bash(npm install *)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s http://localhost:5000/api/rooms -H \"Authorization: Bearer test\")",
+      "Bash(curl -s http://localhost:5000/api/notifications)",
+      "Bash(netstat -tlnp)",
+      "Bash(curl -v http://127.0.0.1:5000/api/movies)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" http://127.0.0.1:5000/api/movies)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" http://127.0.0.1:5000/api/auth)",
+      "Bash(kill %1)",
+      "Bash(curl -s -w \" [HTTP %{http_code}]\" http://127.0.0.1:5000/api/movies)",
+      "Bash(curl -s -w \" [HTTP %{http_code}]\" http://127.0.0.1:5000/api/showtimes)",
+      "Bash(curl -s -w \" [HTTP %{http_code}]\" http://127.0.0.1:5000/api/auth -X POST -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(curl -s -w '\\\\nHTTP: %{http_code}' http://127.0.0.1:5000/api/auth/login -X POST -H 'Content-Type: application/json' -d '{\"username\":\"nobody\",\"password\":\"wrong\"}')",
+      "Bash(curl -s -w '\\\\nHTTP: %{http_code}' http://127.0.0.1:5000/api/auth/register -X POST -H 'Content-Type: application/json' -d '{\"username\":\"testuser1\",\"password\":\"123456\",\"name\":\"Test\",\"email\":\"test@test.com\"}')"
+    ]
+  }
+}

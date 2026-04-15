@@ -1,46 +1,49 @@
-const express = require("express");
+/**
+ * Room routes — thin handlers delegating to RoomService.
+ */
+const express = require('express');
 const router = express.Router();
-const Room = require("../models/Room");
-const { authMiddleware, authorizeRoles } = require("../middleware/auth");
+const RoomService = require('../services/RoomService');
+const { authMiddleware, authorizeRoles } = require('../middleware/auth');
+const apiResponse = require('../utils/apiResponse');
 
-// Thêm phòng
-router.post("/", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+// Create (admin)
+router.post('/', authMiddleware, authorizeRoles('admin'), async (req, res, next) => {
   try {
-    const room = new Room(req.body);
-    await room.save();
-    res.status(201).json(room);
+    const room = await RoomService.create(req.body);
+    apiResponse(res).created({ room }, 'Thêm phòng thành công');
   } catch (err) {
-    res.status(500).json({ message: "Lỗi thêm phòng", error: err.message });
+    next(err);
   }
 });
 
-// Lấy danh sách phòng
-router.get("/", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+// Get all (admin)
+router.get('/', authMiddleware, authorizeRoles('admin'), async (req, res, next) => {
   try {
-    const rooms = await Room.find();
-    res.json(rooms);
+    const rooms = await RoomService.getAll();
+    apiResponse(res).success({ rooms });
   } catch (err) {
-    res.status(500).json({ message: "Lỗi lấy danh sách phòng", error: err.message });
+    next(err);
   }
 });
 
-// Sửa phòng
-router.put("/:id", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+// Update (admin)
+router.put('/:id', authMiddleware, authorizeRoles('admin'), async (req, res, next) => {
   try {
-    const updated = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+    const room = await RoomService.update(req.params.id, req.body);
+    apiResponse(res).success({ room }, 'Cập nhật phòng thành công');
   } catch (err) {
-    res.status(500).json({ message: "Lỗi cập nhật phòng", error: err.message });
+    err.statusCode ? next(err) : res.status(err.statusCode || 500).json({ message: err.message });
   }
 });
 
-// Xoá phòng
-router.delete("/:id", authMiddleware, authorizeRoles("admin"), async (req, res) => {
+// Delete (admin)
+router.delete('/:id', authMiddleware, authorizeRoles('admin'), async (req, res, next) => {
   try {
-    await Room.findByIdAndDelete(req.params.id);
-    res.json({ message: "Đã xoá phòng chiếu" });
+    await RoomService.delete(req.params.id);
+    apiResponse(res).success(null, 'Đã xoá phòng chiếu');
   } catch (err) {
-    res.status(500).json({ message: "Lỗi xoá phòng", error: err.message });
+    err.statusCode ? next(err) : res.status(err.statusCode || 500).json({ message: err.message });
   }
 });
 

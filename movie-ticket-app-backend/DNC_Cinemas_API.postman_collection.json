@@ -1,0 +1,1994 @@
+{
+  "info": {
+    "_postman_id": "dnc-cinemas-api",
+    "name": "DNC Cinemas API",
+    "description": "Postman collection for testing the DNC Cinemas backend API.\n\n## Setup\n1. Import this collection into Postman\n2. Set your `baseUrl` variable (default: `http://localhost:5000`)\n3. Set your `{{MONGO_URI}}` and other env vars in `.env` before starting the server\n4. Run requests in order: Register/Login first to get a token\n5. The collection uses `{{accessToken}}` and `{{refreshToken}}` variables — run **Register** or **Login** to populate them automatically",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "showtimeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "movieId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roomId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "00 - Auth",
+      "item": [
+        {
+          "name": "Register (Customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function() {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Success is true', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.success).to.eq(true);",
+                  "});",
+                  "pm.test('Message is correct', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('Đăng ký');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"testcustomer\",\n    \"password\": \"123456\",\n    \"name\": \"Test Customer\",\n    \"email\": \"testcustomer@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new customer account. Role is automatically set to 'customer'."
+          },
+          "response": []
+        },
+        {
+          "name": "Register (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function() {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Success is true', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"testadmin\",\n    \"password\": \"123456\",\n    \"name\": \"Test Admin\",\n    \"email\": \"testadmin@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new admin account. NOTE: Role is always 'customer' — to create an admin, manually update the user's role in MongoDB."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success is true', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.success).to.eq(true);",
+                  "});",
+                  "pm.test('accessToken exists', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.accessToken).to.be.a('string');",
+                  "  pm.expect(json.data.accessToken.length).to.be.above(10);",
+                  "});",
+                  "pm.test('refreshToken exists', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.refreshToken).to.be.a('string');",
+                  "});",
+                  "",
+                  "// Save tokens for later use",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', json.data.refreshToken);",
+                  "pm.collectionVariables.set('customerId', json.data.userId);",
+                  "console.log('Customer ID saved:', json.data.userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"testcustomer\",\n    \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with username and password. Returns accessToken (15 min) and refreshToken (7 days)."
+          },
+          "response": []
+        },
+        {
+          "name": "Login (Wrong Password)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function() {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Success is false', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(false);",
+                  "});",
+                  "pm.test('Error message is correct', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.error).to.include('Sai mật khẩu');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"testcustomer\",\n    \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Attempt login with wrong password — should return 400."
+          },
+          "response": []
+        },
+        {
+          "name": "Login (Non-existent User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', function() {",
+                  "  pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Success is false', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"nobody\",\n    \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Attempt login with non-existent username — should return 404."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('New accessToken returned', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.accessToken).to.be.a('string');",
+                  "});",
+                  "",
+                  "var oldToken = pm.collectionVariables.get('accessToken');",
+                  "var json = pm.response.json();",
+                  "pm.test('Token is different from old one', function() {",
+                  "  pm.expect(json.data.accessToken).to.not.eq(oldToken);",
+                  "});",
+                  "",
+                  "// Update stored token",
+                  "pm.collectionVariables.set('accessToken', json.data.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh-token"]
+            },
+            "description": "Use refreshToken to get a new accessToken."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token (Invalid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403', function() {",
+                  "  pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"invalid.token.here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh-token"]
+            },
+            "description": "Attempt refresh with an invalid token — should return 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success is true', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});",
+                  "pm.test('Message is correct', function() {",
+                  "  pm.expect(pm.response.json().message).to.include('Đăng xuất');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout — clears refreshToken from DB."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 - Movies",
+      "item": [
+        {
+          "name": "Get All Movies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success is true', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});",
+                  "pm.test('movies array exists', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.movies).to.be.an('array');",
+                  "});",
+                  "pm.test('First movie has title', function() {",
+                  "  var json = pm.response.json();",
+                  "  if (json.data.movies.length > 0) {",
+                  "    pm.expect(json.data.movies[0].title).to.be.a('string');",
+                  "    pm.collectionVariables.set('movieId', json.data.movies[0]._id);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movies"]
+            },
+            "description": "Get all movies (public endpoint)."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Movies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success is true', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});",
+                  "pm.test('movies array exists', function() {",
+                  "  pm.expect(pm.response.json().data.movies).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/search?q=Avengers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movies", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Avengers"
+                }
+              ]
+            },
+            "description": "Search movies by title or genre."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Movie (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function() {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Movie created', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.success).to.eq(true);",
+                  "  pm.expect(json.data.movie).to.be.an('object');",
+                  "  pm.collectionVariables.set('movieId', json.data.movie._id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Dune: Part Two\",\n    \"genre\": \"Sci-Fi\",\n    \"description\": \"Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.\",\n    \"duration\": 166,\n    \"director\": [\"Denis Villeneuve\"],\n    \"actors\": [\"Timothée Chalamet\", \"Zendaya\", \"Rebecca Ferguson\"],\n    \"poster\": \"https://example.com/dune2-poster.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movies"]
+            },
+            "description": "Create a new movie (admin only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Movie (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Movie updated', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Dune: Part Two (IMAX)\",\n    \"duration\": 170\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/{{movieId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movies", "{{movieId}}"]
+            },
+            "description": "Update a movie by ID (admin only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Movie (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/{{movieId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movies", "{{movieId}}"]
+            },
+            "description": "Delete a movie by ID (admin only)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Rooms",
+      "item": [
+        {
+          "name": "Get All Rooms (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Rooms array exists', function() {",
+                  "  pm.expect(pm.response.json().data.rooms).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rooms"]
+            },
+            "description": "Get all rooms (admin only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Room (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function() {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Room created', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.success).to.eq(true);",
+                  "  pm.expect(json.data.room).to.be.an('object');",
+                  "  pm.collectionVariables.set('roomId', json.data.room._id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Screen 1\",\n    \"capacity\": 150,\n    \"location\": \"Tầng 1, Khu A\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rooms"]
+            },
+            "description": "Create a new room (admin only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Room (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"capacity\": 160\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms/{{roomId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rooms", "{{roomId}}"]
+            },
+            "description": "Update a room (admin only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Room (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rooms/{{roomId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rooms", "{{roomId}}"]
+            },
+            "description": "Delete a room (admin only)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Showtimes",
+      "item": [
+        {
+          "name": "Get All Showtimes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success is true', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});",
+                  "pm.test('showtimes array exists', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.showtimes).to.be.an('array');",
+                  "  if (json.data.showtimes.length > 0) {",
+                  "    pm.collectionVariables.set('showtimeId', json.data.showtimes[0]._id);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/showtimes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "showtimes"]
+            },
+            "description": "Get all showtimes (public)."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Showtime (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function() {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Showtime created', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.success).to.eq(true);",
+                  "  pm.expect(json.data.showtime).to.be.an('object');",
+                  "  pm.collectionVariables.set('showtimeId', json.data.showtime._id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"movie\": \"{{movieId}}\",\n    \"dateTime\": \"2026-04-20T14:00:00.000Z\",\n    \"room\": \"{{roomId}}\",\n    \"ticketPrice\": 75000,\n    \"format\": \"2D\",\n    \"language\": \"Phụ đề\",\n    \"duration\": 120,\n    \"note\": \"Suất chiếu sớm\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/showtimes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "showtimes"]
+            },
+            "description": "Create a showtime (admin only). Auto-generates 150 seats. Checks for time conflicts in the same room."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Showtimes by Movie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('showtimes array returned', function() {",
+                  "  pm.expect(pm.response.json().data.showtimes).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/showtimes/movie/{{movieId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "showtimes", "movie", "{{movieId}}"]
+            },
+            "description": "Get all showtimes for a specific movie."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Showtime",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Showtime returned', function() {",
+                  "  pm.expect(pm.response.json().data.showtime).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/showtimes/{{showtimeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "showtimes", "{{showtimeId}}"]
+            },
+            "description": "Get a single showtime by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Showtime (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"ticketPrice\": 85000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/showtimes/{{showtimeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "showtimes", "{{showtimeId}}"]
+            },
+            "description": "Update a showtime (admin only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Showtime (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/showtimes/{{showtimeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "showtimes", "{{showtimeId}}"]
+            },
+            "description": "Delete a showtime (admin only)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Bookings",
+      "item": [
+        {
+          "name": "Hold Seats (Customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function() {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Success is true', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});",
+                  "pm.test('Booking has pending status', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.booking.status).to.eq('pending');",
+                  "});",
+                  "pm.test('Booking has expiresAt', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.booking.expiresAt).to.be.a('string');",
+                  "});",
+                  "",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('bookingId', json.data.booking._id);",
+                  "console.log('Booking ID:', json.data.booking._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"showtimeId\": \"{{showtimeId}}\",\n    \"seats\": [\"A1\", \"A2\", \"A3\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/hold",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "hold"]
+            },
+            "description": "Hold seats for a showtime. Creates a pending booking with 5-minute expiry."
+          },
+          "response": []
+        },
+        {
+          "name": "Hold Seats (Conflict - Same Seats)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function() {",
+                  "  pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Success is false', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(false);",
+                  "});",
+                  "pm.test('Error about seat conflict', function() {",
+                  "  pm.expect(pm.response.json().error).to.include('ghế');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"showtimeId\": \"{{showtimeId}}\",\n    \"seats\": [\"A1\", \"A2\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/hold",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "hold"]
+            },
+            "description": "Try to hold the same seats again — should return 400 conflict."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reserved Seats (Public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('reservedSeats array returned', function() {",
+                  "  pm.expect(pm.response.json().data.reservedSeats).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/reserved-seats/{{showtimeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "reserved-seats", "{{showtimeId}}"]
+            },
+            "description": "Get all reserved (non-cancelled) seats for a showtime. Public endpoint."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Payment (Customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Booking status is paid', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.booking.status).to.eq('paid');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/pay/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "pay", "{{bookingId}}"]
+            },
+            "description": "Confirm payment for a held booking. Atomically updates booking status and locks seats."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Bookings (Customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('bookings array returned', function() {",
+                  "  pm.expect(pm.response.json().data.bookings).to.be.an('array');",
+                  "});",
+                  "pm.test('QR code on paid booking', function() {",
+                  "  var json = pm.response.json();",
+                  "  var paid = json.data.bookings.find(b => b.status === 'paid');",
+                  "  if (paid) {",
+                  "    pm.expect(paid.qrCode).to.be.a('string');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "my"]
+            },
+            "description": "Get all bookings for the logged-in customer. Paid bookings include QR codes."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Booking (Customer - No Seats Held Yet)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Cancel success message', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "{{bookingId}}"]
+            },
+            "description": "Customer cancels their own booking. Blocked within 1 hour of showtime."
+          },
+          "response": []
+        },
+        {
+          "name": "Hold → Cancel Cycle Test",
+          "event": [
+            "Hold seats, pay, cancel — full lifecycle test. Run after creating a new showtime."
+          ],
+          "item": [
+            {
+              "name": "Step 1: Hold Seats",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "var json = pm.response.json();",
+                      "pm.collectionVariables.set('bookingId', json.data.booking._id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"showtimeId\": \"{{showtimeId}}\",\n    \"seats\": [\"B5\", \"B6\"]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/bookings/hold",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bookings", "hold"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 2: Confirm Payment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/bookings/pay/{{bookingId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bookings", "pay", "{{bookingId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 3: Get My Bookings",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/bookings/my",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bookings", "my"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Step 4: Cancel Booking",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/bookings/{{bookingId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "bookings", "{{bookingId}}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Get All Bookings (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('bookings array returned', function() {",
+                  "  pm.expect(pm.response.json().data.bookings).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/admin/bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "admin", "bookings"]
+            },
+            "description": "Get all bookings (admin only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Booking Seats (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"seats\": [\"C1\", \"C2\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/admin/bookings/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "admin", "bookings", "{{bookingId}}"]
+            },
+            "description": "Admin updates booking seats (with conflict check)."
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Booking (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/admin/bookings/{{bookingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookings", "admin", "bookings", "{{bookingId}}"]
+            },
+            "description": "Admin cancels any booking (no time restriction)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 - Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('User object returned', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.user).to.be.an('object');",
+                  "});",
+                  "pm.test('No password field', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.user.password).to.be.undefined;",
+                  "});",
+                  "pm.test('No refreshToken field', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.user.refreshToken).to.be.undefined;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "me"]
+            },
+            "description": "Get the logged-in user's profile. Sensitive fields (password, refreshToken) are stripped."
+          },
+          "response": []
+        },
+        {
+          "name": "Update My Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Profile updated', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Updated Customer Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "{{customerId}}"]
+            },
+            "description": "Update own profile. Triggers self-notification."
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Password changed', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"oldPassword\": \"123456\",\n    \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/change-password/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "change-password", "{{customerId}}"]
+            },
+            "description": "Change password. Requires old password verification."
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password (Wrong Old Password)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', function() {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"oldPassword\": \"wrongoldpassword\",\n    \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/change-password/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "change-password", "{{customerId}}"]
+            },
+            "description": "Try changing password with wrong old password — should return 400."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('users array returned', function() {",
+                  "  pm.expect(pm.response.json().data.users).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "admin", "users"]
+            },
+            "description": "Get all users (admin only). Passwords and refreshTokens are stripped."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Status — Ban (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"banned\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "{{customerId}}"]
+            },
+            "description": "Admin bans a user. Triggers email + notification to the user."
+          },
+          "response": []
+        },
+        {
+          "name": "Unban User (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "{{customerId}}"]
+            },
+            "description": "Admin un-bans a user. Triggers email + notification to the user."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 - Notifications",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('notifications array + unreadCount', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.data.notifications).to.be.an('array');",
+                  "  pm.expect(json.data.unreadCount).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            },
+            "description": "Get all notifications for the logged-in user with unread count."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Notification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function() {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Notification created', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Chào mừng đến với DNC Cinemas!\",\n    \"message\": \"Cảm ơn bạn đã đăng ký tài khoản. Chúc bạn xem phim vui vẻ!\",\n    \"icon\": \"movie-outline\",\n    \"type\": \"success\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            },
+            "description": "Create a notification for the current user."
+          },
+          "response": []
+        },
+        {
+          "name": "Mark All As Read",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Success message', function() {",
+                  "  pm.expect(pm.response.json().success).to.eq(true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "read-all"]
+            },
+            "description": "Mark all notifications as read."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 - Payments",
+      "item": [
+        {
+          "name": "Create MoMo Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function() {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('MoMo response received', function() {",
+                  "  var json = pm.response.json();",
+                  "  // MoMo may return errorCode: 0 (success) or other codes",
+                  "  // Just verify the structure",
+                  "  console.log('MoMo response:', JSON.stringify(json));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"totalAmount\": 225000,\n    \"bookingId\": \"{{bookingId}}\",\n    \"redirectUrl\": \"https://dnc-cinemas.com/payment/callback\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payment/momo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payment", "momo"]
+            },
+            "description": "Create a MoMo payment URL. Returns payUrl from MoMo API. NOTE: Requires valid MoMo credentials in .env. Will return error if credentials are not configured."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "08 - Authorization Tests",
+      "item": [
+        {
+          "name": "Access Without Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function() {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Error message', function() {",
+                  "  var json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('Chưa đăng nhập');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "me"]
+            },
+            "description": "Access protected endpoint without token — should return 401."
+          },
+          "response": []
+        },
+        {
+          "name": "Access With Invalid Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401', function() {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid.token.here"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "me"]
+            },
+            "description": "Access protected endpoint with invalid token — should return 401."
+          },
+          "response": []
+        },
+        {
+          "name": "Customer Accessing Admin Route (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403', function() {",
+                  "  pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('Forbidden message', function() {",
+                  "  pm.expect(pm.response.json().message).to.include('quyền');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Unauthorized Movie\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movies"]
+            },
+            "description": "Customer trying to create a movie — should return 403 Forbidden."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

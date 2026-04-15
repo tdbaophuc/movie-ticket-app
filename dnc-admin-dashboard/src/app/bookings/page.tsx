@@ -85,7 +85,7 @@ const BookingsPage = () => {
       width: 200,
       renderCell: (params) => (
         <>
-          <Button variant="contained"
+          <Button variant="outlined"
   color="info"
   size="small"
   sx={{
@@ -94,15 +94,15 @@ const BookingsPage = () => {
     textTransform: 'none',
     boxShadow: 1,
     '&:hover': { backgroundColor: '#0288d1' }
-  }} onClick={() => handleEdit(params.row)} variant="outlined" sx={{ mr: 1 }}>Cập nhật</Button>
-          <Button variant="outlined"
+  }} onClick={() => handleEdit(params.row)}>Cập nhật</Button>
+          <Button
   color="error"
   size="small"
   sx={{
     borderRadius: 2,
     textTransform: 'none',
     '&:hover': { backgroundColor: '#ffebee' }
-  }} onClick={() => handleDelete(params.row.id)} color="error" variant="outlined">Huỷ vé</Button>
+  }} onClick={() => handleDelete(params.row.id)} variant="outlined">Huỷ vé</Button>
         </>
       )
     }

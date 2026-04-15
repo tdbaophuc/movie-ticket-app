@@ -1,49 +1,47 @@
-const Notification = require('../models/Notification');
+/**
+ * NotificationController — thin HTTP handlers calling NotificationService.
+ */
+const NotificationService = require('../services/NotificationService');
+const apiResponse = require('../utils/apiResponse');
 
-
-// Lấy danh sách thông báo của người dùng hiện tại
-const getNotifications = async (req, res) => {
+// GET /api/notifications
+exports.getAll = async (req, res, next) => {
   try {
-    const notifications = await Notification.find({ userId: req.user.id }).sort({ createdAt: -1 });
-    res.json(notifications);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi máy chủ khi lấy thông báo' });
+    const notifications = await NotificationService.getAll(req.user.id);
+    const unreadCount = await NotificationService.getUnreadCount(req.user.id);
+    apiResponse(res).success({ notifications, unreadCount });
+  } catch (err) {
+    next(err);
   }
 };
 
-// Đánh dấu 1 thông báo là đã đọc
-const markAsRead = async (req, res) => {
+// POST /api/notifications
+exports.create = async (req, res, next) => {
   try {
-    const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.id },
-      { isRead: true },
-      { new: true }
-    );
-    if (!notification) return res.status(404).json({ message: 'Không tìm thấy thông báo' });
-    res.json(notification);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi máy chủ khi cập nhật thông báo' });
+    const notification = await NotificationService.create(req.user.id, req.body);
+    apiResponse(res).created({ notification }, 'Tạo thông báo thành công');
+  } catch (err) {
+    next(err);
   }
 };
 
-// Tạo thông báo (cho phép gọi từ client nếu cần)
-const createNotification = async (req, res) => {
+// PUT /api/notifications/:id/read
+exports.markAsRead = async (req, res, next) => {
   try {
-    const { userId, title, message } = req.body;
-    if (!userId || !title || !message) {
-      return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
-    }
-
-    const notification = await Notification.create({ userId, title, message });
-    res.status(201).json(notification);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Lỗi máy chủ khi tạo thông báo' });
+    const notification = await NotificationService.markAsRead(req.params.id, req.user.id);
+    if (!notification) return apiResponse(res).error('Không tìm thấy thông báo', 404);
+    apiResponse(res).success({ notification });
+  } catch (err) {
+    next(err);
   }
 };
 
-
-
-module.exports = { getNotifications, markAsRead, createNotification };
+// PUT /api/notifications/read-all
+exports.markAllAsRead = async (req, res, next) => {
+  try {
+    await NotificationService.markAllAsRead(req.user.id);
+    apiResponse(res).success(null, 'Đã đánh dấu tất cả là đã đọc');
+  } catch (err) {
+    next(err);
+  }
+};
